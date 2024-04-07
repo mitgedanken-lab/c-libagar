@@ -1541,6 +1541,37 @@ main(int argc, char *argv[])
 endmacro()
 
 #
+# From BSDBuild/glew.pm:
+#
+macro(Check_Glew)
+	set(GLEW_CFLAGS "")
+	set(GLEW_LIBS "")
+
+	find_package(glew)
+	if(GLEW_FOUND)
+		set(HAVE_GLEW ON)
+		BB_Save_Define(HAVE_GLEW)
+		if(${GLEW_INCLUDE_DIRS})
+			set(GLEW_CFLAGS "-I${GLEW_INCLUDE_DIRS}")
+		endif()
+		set(GLEW_LIBS "${GLEW_LIBRARIES}")
+	else()
+		set(HAVE_GLEW OFF)
+		BB_Save_Undef(HAVE_GLEW)
+	endif()
+
+	BB_Save_MakeVar(GLEW_CFLAGS "${GLEW_CFLAGS}")
+	BB_Save_MakeVar(GLEW_LIBS "${GLEW_LIBS}")
+endmacro()
+
+macro(Disable_Glew)
+	set(HAVE_GLEW OFF)
+	BB_Save_Undef(HAVE_GLEW)
+	BB_Save_MakeVar(GLEW_CFLAGS "")
+	BB_Save_MakeVar(GLEW_LIBS "")
+endmacro()
+
+#
 # From BSDBuild/glob.pm:
 #
 macro(Check_Glob)
@@ -3497,4 +3528,35 @@ macro(Disable_Zlib)
 	BB_Save_Undef(HAVE_ZLIB)
 	BB_Save_MakeVar(ZLIB_CFLAGS "")
 	BB_Save_MakeVar(ZLIB_LIBS "")
+endmacro()
+
+#
+# From BSDBuild/zstd.pm:
+#
+macro(Check_Zstd)
+	set(ZSTD_CFLAGS "")
+	set(ZSTD_LIBS "")
+
+	find_package(zstd)
+	if(ZSTD_FOUND)
+		set(HAVE_ZSTD ON)
+		BB_Save_Define(HAVE_ZSTD)
+		if(${ZSTD_INCLUDE_DIRS})
+			set(ZSTD_CFLAGS "-I${ZSTD_INCLUDE_DIRS}")
+		endif()
+		set(ZSTD_LIBS "${ZSTD_LIBRARIES}")
+	else()
+		set(HAVE_ZSTD OFF)
+		BB_Save_Undef(HAVE_ZSTD)
+	endif()
+
+	BB_Save_MakeVar(ZSTD_CFLAGS "${ZSTD_CFLAGS}")
+	BB_Save_MakeVar(ZSTD_LIBS "${ZSTD_LIBS}")
+endmacro()
+
+macro(Disable_Zstd)
+	set(HAVE_ZSTD OFF)
+	BB_Save_Undef(HAVE_ZSTD)
+	BB_Save_MakeVar(ZSTD_CFLAGS "")
+	BB_Save_MakeVar(ZSTD_LIBS "")
 endmacro()
