@@ -11724,7 +11724,7 @@ PNG_LIBS=
 MK_EXEC_FOUND=No
 if [ "${prefix_png}" != "" ]; then
 if [ -x "${prefix_png}/bin/libpng-config" -a ! -d "${prefix_png}/bin/libpng-config" ]; then
-PNG_LIBS=`${prefix_png}/bin/libpng-config --libs`
+PNG_LIBS=`${prefix_png}/bin/libpng-config --static --libs`
 MK_EXEC_FOUND=Yes
 MK_EXEC_PATH="${prefix_png}/bin/libpng-config"
 fi
@@ -11733,12 +11733,12 @@ bb_save_IFS=$IFS
 IFS=$PATH_SEPARATOR
 for path in $PATH; do
 if [ -x "${path}/libpng-config" -a ! -d "${path}/libpng-config" ]; then
-PNG_LIBS=`${path}/libpng-config --libs`
+PNG_LIBS=`${path}/libpng-config --static --libs`
 MK_EXEC_FOUND=Yes
 MK_EXEC_PATH="${path}/libpng-config"
 break
 elif [ -e "${path}/libpng-config.exe" ]; then
-PNG_LIBS=`${path}/libpng-config.exe --libs`
+PNG_LIBS=`${path}/libpng-config.exe --static --libs`
 MK_EXEC_FOUND=Yes
 MK_EXEC_PATH="${path}/libpng-config.exe"
 break
