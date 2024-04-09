@@ -1727,6 +1727,37 @@ int main(int argc, char *argv[]) {
 endmacro()
 
 #
+# From BSDBuild/lua.pm:
+#
+macro(Check_Lua)
+	set(LUA_CFLAGS "")
+	set(LUA_LIBS "")
+
+	find_package(Lua)
+	if(LUA_FOUND)
+		set(HAVE_LUA ON)
+		BB_Save_Define(HAVE_LUA)
+		if(${LUA_INCLUDE_DIRS})
+			set(LUA_CFLAGS "-I${LUA_INCLUDE_DIRS}")
+		endif()
+		set(LUA_LIBS "${LUA_LIBRARIES}")
+	else()
+		set(HAVE_LUA OFF)
+		BB_Save_Undef(HAVE_LUA)
+	endif()
+
+	BB_Save_MakeVar(LUA_CFLAGS "${LUA_CFLAGS}")
+	BB_Save_MakeVar(LUA_LIBS "${LUA_LIBS}")
+endmacro()
+
+macro(Disable_Lua)
+	set(HAVE_LUA OFF)
+	BB_Save_Undef(HAVE_LUA)
+	BB_Save_MakeVar(LUA_CFLAGS "")
+	BB_Save_MakeVar(LUA_LIBS "")
+endmacro()
+
+#
 # From BSDBuild/math.pm:
 #
 macro(Check_Math)

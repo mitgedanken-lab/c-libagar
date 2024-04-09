@@ -10086,19 +10086,22 @@ $ECHO_N 'checking for the X window system...'
 $ECHO_N '# checking for the X window system...' >>config.log
 # BEGIN x11(0 ${prefix_x})
 if [ "${PKGCONFIG}" != '' -a "`${PKGCONFIG} --variable=prefix x11 2>/dev/null`" != '' ]; then
-if [ "$pfx" != "" ]; then
+if [ "${prefix_x}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix x11 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_x}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, x11 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, x11 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_x} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_x} was given." >>config.log
+echo "* ERROR: According to pkg-config, x11 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, x11 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_x} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_x} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct x11 prefix (or omit for autodetect)."
-echo "# * Please indicate correct x11 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct x11 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct x11 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -10106,22 +10109,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 X11_VERSION=`$PKGCONFIG x11 --modversion 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_x}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix x11 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_x}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, x11 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, x11 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_x} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_x} was given." >>config.log
+echo "* ERROR: According to pkg-config, x11 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, x11 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_x} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_x} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct x11 prefix (or omit for autodetect)."
-echo "# * Please indicate correct x11 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct x11 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct x11 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -10129,22 +10136,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 X11_CFLAGS=`$PKGCONFIG x11 --cflags 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_x}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix x11 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_x}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, x11 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, x11 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_x} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_x} was given." >>config.log
+echo "* ERROR: According to pkg-config, x11 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, x11 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_x} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_x} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct x11 prefix (or omit for autodetect)."
-echo "# * Please indicate correct x11 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct x11 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct x11 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -10152,6 +10163,7 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 X11_LIBS=`$PKGCONFIG x11 --libs 2>/dev/null`
@@ -10553,19 +10565,22 @@ $ECHO_N 'checking for the Xinerama extension...'
 $ECHO_N '# checking for the Xinerama extension...' >>config.log
 # BEGIN xinerama(0 ${prefix_xinerama})
 if [ "${PKGCONFIG}" != '' -a "`${PKGCONFIG} --variable=prefix xinerama 2>/dev/null`" != '' ]; then
-if [ "$pfx" != "" ]; then
+if [ "${prefix_xinerama}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix xinerama 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_xinerama}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, xinerama is installed in prefix: "
-echo "# * ERROR: According to pkg-config, xinerama is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_xinerama} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_xinerama} was given." >>config.log
+echo "* ERROR: According to pkg-config, xinerama is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, xinerama is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_xinerama} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_xinerama} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct xinerama prefix (or omit for autodetect)."
-echo "# * Please indicate correct xinerama prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct xinerama prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct xinerama prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -10573,22 +10588,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 XINERAMA_VERSION=`$PKGCONFIG xinerama --modversion 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_xinerama}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix xinerama 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_xinerama}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, xinerama is installed in prefix: "
-echo "# * ERROR: According to pkg-config, xinerama is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_xinerama} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_xinerama} was given." >>config.log
+echo "* ERROR: According to pkg-config, xinerama is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, xinerama is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_xinerama} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_xinerama} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct xinerama prefix (or omit for autodetect)."
-echo "# * Please indicate correct xinerama prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct xinerama prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct xinerama prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -10596,22 +10615,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 XINERAMA_CFLAGS=`$PKGCONFIG xinerama --cflags 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_xinerama}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix xinerama 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_xinerama}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, xinerama is installed in prefix: "
-echo "# * ERROR: According to pkg-config, xinerama is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_xinerama} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_xinerama} was given." >>config.log
+echo "* ERROR: According to pkg-config, xinerama is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, xinerama is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_xinerama} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_xinerama} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct xinerama prefix (or omit for autodetect)."
-echo "# * Please indicate correct xinerama prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct xinerama prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct xinerama prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -10619,6 +10642,7 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 XINERAMA_LIBS=`$PKGCONFIG xinerama --libs 2>/dev/null`
@@ -11013,19 +11037,22 @@ $ECHO_N 'checking for FreeType...'
 $ECHO_N '# checking for FreeType...' >>config.log
 # BEGIN freetype(7.0.1 ${prefix_freetype})
 if [ "${PKGCONFIG}" != '' -a "`${PKGCONFIG} --variable=prefix freetype2 2>/dev/null`" != '' ]; then
-if [ "$pfx" != "" ]; then
+if [ "${prefix_freetype}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix freetype2 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_freetype}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, freetype2 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, freetype2 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_freetype} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_freetype} was given." >>config.log
+echo "* ERROR: According to pkg-config, freetype2 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, freetype2 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_freetype} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_freetype} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct freetype2 prefix (or omit for autodetect)."
-echo "# * Please indicate correct freetype2 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct freetype2 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct freetype2 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -11033,22 +11060,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 FREETYPE_VERSION=`$PKGCONFIG freetype2 --modversion 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_freetype}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix freetype2 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_freetype}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, freetype2 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, freetype2 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_freetype} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_freetype} was given." >>config.log
+echo "* ERROR: According to pkg-config, freetype2 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, freetype2 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_freetype} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_freetype} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct freetype2 prefix (or omit for autodetect)."
-echo "# * Please indicate correct freetype2 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct freetype2 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct freetype2 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -11056,22 +11087,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 FREETYPE_CFLAGS=`$PKGCONFIG freetype2 --cflags 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_freetype}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix freetype2 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_freetype}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, freetype2 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, freetype2 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_freetype} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_freetype} was given." >>config.log
+echo "* ERROR: According to pkg-config, freetype2 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, freetype2 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_freetype} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_freetype} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct freetype2 prefix (or omit for autodetect)."
-echo "# * Please indicate correct freetype2 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct freetype2 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct freetype2 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -11079,6 +11114,7 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 FREETYPE_LIBS=`$PKGCONFIG freetype2 --libs 2>/dev/null`
@@ -11305,19 +11341,22 @@ echo '#undef HAVE_FREETYPE' >$bb_incdir/have_freetype.h
 $ECHO_N 'checking for fontconfig...'
 $ECHO_N '# checking for fontconfig...' >>config.log
 # BEGIN fontconfig(2.6.0 ${prefix_fontconfig})
-if [ "$pfx" != "" ]; then
+if [ "${prefix_fontconfig}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix fontconfig 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_fontconfig}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, fontconfig is installed in prefix: "
-echo "# * ERROR: According to pkg-config, fontconfig is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_fontconfig} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_fontconfig} was given." >>config.log
+echo "* ERROR: According to pkg-config, fontconfig is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, fontconfig is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_fontconfig} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_fontconfig} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct fontconfig prefix (or omit for autodetect)."
-echo "# * Please indicate correct fontconfig prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct fontconfig prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct fontconfig prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -11325,22 +11364,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 FONTCONFIG_VERSION=`$PKGCONFIG fontconfig --modversion 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_fontconfig}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix fontconfig 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_fontconfig}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, fontconfig is installed in prefix: "
-echo "# * ERROR: According to pkg-config, fontconfig is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_fontconfig} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_fontconfig} was given." >>config.log
+echo "* ERROR: According to pkg-config, fontconfig is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, fontconfig is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_fontconfig} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_fontconfig} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct fontconfig prefix (or omit for autodetect)."
-echo "# * Please indicate correct fontconfig prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct fontconfig prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct fontconfig prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -11348,22 +11391,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 FONTCONFIG_CFLAGS=`$PKGCONFIG fontconfig --cflags 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_fontconfig}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix fontconfig 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_fontconfig}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, fontconfig is installed in prefix: "
-echo "# * ERROR: According to pkg-config, fontconfig is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_fontconfig} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_fontconfig} was given." >>config.log
+echo "* ERROR: According to pkg-config, fontconfig is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, fontconfig is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_fontconfig} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_fontconfig} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct fontconfig prefix (or omit for autodetect)."
-echo "# * Please indicate correct fontconfig prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct fontconfig prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct fontconfig prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -11371,6 +11418,7 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 FONTCONFIG_LIBS=`$PKGCONFIG fontconfig --libs 2>/dev/null`
@@ -14539,19 +14587,22 @@ SUBDIR_au="au"
 $ECHO_N 'checking for libsndfile...'
 $ECHO_N '# checking for libsndfile...' >>config.log
 # BEGIN sndfile(1.0.21 ${prefix_sndfile})
-if [ "$pfx" != "" ]; then
+if [ "${prefix_sndfile}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix sndfile 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_sndfile}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, sndfile is installed in prefix: "
-echo "# * ERROR: According to pkg-config, sndfile is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_sndfile} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_sndfile} was given." >>config.log
+echo "* ERROR: According to pkg-config, sndfile is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, sndfile is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_sndfile} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_sndfile} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct sndfile prefix (or omit for autodetect)."
-echo "# * Please indicate correct sndfile prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct sndfile prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct sndfile prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -14559,22 +14610,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 SNDFILE_VERSION=`$PKGCONFIG sndfile --modversion 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_sndfile}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix sndfile 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_sndfile}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, sndfile is installed in prefix: "
-echo "# * ERROR: According to pkg-config, sndfile is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_sndfile} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_sndfile} was given." >>config.log
+echo "* ERROR: According to pkg-config, sndfile is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, sndfile is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_sndfile} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_sndfile} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct sndfile prefix (or omit for autodetect)."
-echo "# * Please indicate correct sndfile prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct sndfile prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct sndfile prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -14582,22 +14637,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 SNDFILE_CFLAGS=`$PKGCONFIG sndfile --cflags 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_sndfile}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix sndfile 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_sndfile}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, sndfile is installed in prefix: "
-echo "# * ERROR: According to pkg-config, sndfile is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_sndfile} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_sndfile} was given." >>config.log
+echo "* ERROR: According to pkg-config, sndfile is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, sndfile is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_sndfile} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_sndfile} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct sndfile prefix (or omit for autodetect)."
-echo "# * Please indicate correct sndfile prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct sndfile prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct sndfile prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -14605,6 +14664,7 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 SNDFILE_LIBS=`$PKGCONFIG sndfile --libs 2>/dev/null`
@@ -14723,19 +14783,22 @@ $ECHO_N '# checking for PortAudio2...' >>config.log
 # BEGIN portaudio(19.0 ${prefix_portaudio})
 PORTAUDIO_VERSION=""
 if [ "${PKGCONFIG}" != '' -a "`${PKGCONFIG} --variable=prefix portaudio-2.0 2>/dev/null`" != '' ]; then
-if [ "$pfx" != "" ]; then
+if [ "${prefix_portaudio}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix portaudio-2.0 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_portaudio}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, portaudio-2.0 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, portaudio-2.0 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_portaudio} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_portaudio} was given." >>config.log
+echo "* ERROR: According to pkg-config, portaudio-2.0 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, portaudio-2.0 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_portaudio} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_portaudio} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct portaudio-2.0 prefix (or omit for autodetect)."
-echo "# * Please indicate correct portaudio-2.0 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct portaudio-2.0 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct portaudio-2.0 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -14743,22 +14806,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 PORTAUDIO_VERSION=`$PKGCONFIG portaudio-2.0 --modversion 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_portaudio}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix portaudio-2.0 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_portaudio}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, portaudio-2.0 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, portaudio-2.0 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_portaudio} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_portaudio} was given." >>config.log
+echo "* ERROR: According to pkg-config, portaudio-2.0 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, portaudio-2.0 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_portaudio} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_portaudio} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct portaudio-2.0 prefix (or omit for autodetect)."
-echo "# * Please indicate correct portaudio-2.0 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct portaudio-2.0 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct portaudio-2.0 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -14766,22 +14833,26 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 PORTAUDIO_CFLAGS=`$PKGCONFIG portaudio-2.0 --cflags 2>/dev/null`
-if [ "$pfx" != "" ]; then
+if [ "${prefix_portaudio}" != "" ]; then
 MK_EXEC_PKGPREFIX=`$PKGCONFIG --variable=prefix portaudio-2.0 2>/dev/null`
-if [ "$MK_EXEC_PKGPREFIX" != "$pfx" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "" ]; then
+if [ "$MK_EXEC_PKGPREFIX" != "${prefix_portaudio}" ]; then
+echo ""
+echo "# " >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* ERROR: According to pkg-config, portaudio-2.0 is installed in prefix: "
-echo "# * ERROR: According to pkg-config, portaudio-2.0 is installed in prefix: " >>config.log
-echo "* $MK_EXEC_PKGPREFIX, but the prefix ${prefix_portaudio} was given."
-echo "# * $MK_EXEC_PKGPREFIX, but the prefix ${prefix_portaudio} was given." >>config.log
+echo "* ERROR: According to pkg-config, portaudio-2.0 is installed in $MK_EXEC_PKGPREFIX,"
+echo "# * ERROR: According to pkg-config, portaudio-2.0 is installed in $MK_EXEC_PKGPREFIX," >>config.log
+echo "* but the alternate prefix ${prefix_portaudio} was passed to configure instead."
+echo "# * but the alternate prefix ${prefix_portaudio} was passed to configure instead." >>config.log
 echo "* "
 echo "# * " >>config.log
-echo "* Please indicate correct portaudio-2.0 prefix (or omit for autodetect)."
-echo "# * Please indicate correct portaudio-2.0 prefix (or omit for autodetect)." >>config.log
+echo "* Please indicate correct portaudio-2.0 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)."
+echo "# * Please indicate correct portaudio-2.0 prefix (or simply omit to use $MK_EXEC_PKGPREFIX)." >>config.log
 echo "* "
 echo "# * " >>config.log
 echo "***"
@@ -14789,6 +14860,7 @@ echo "*** ERROR: Package prefix mismatch"
 echo "*** Failed! See ./config.log for more details."
 echo "***"
 exit 1
+fi
 fi
 fi
 PORTAUDIO_LIBS=`$PKGCONFIG portaudio-2.0 --libs 2>/dev/null`

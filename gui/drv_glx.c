@@ -159,7 +159,7 @@ static Atom wmDeleteWindow, wmNetWmWindowOpacity, wmProtocols, wmTakeFocus,
             wmNetWmStateBelow, wmNetWmWindowType, wmNetWmWindowOpacity;
 #endif
 
-static int  GLX_InitGlobals(void);
+static int  GLX_InitGlobals(AG_Driver *_Nonnull);
 static void GLX_PostResizeCallback(AG_Window *_Nonnull, AG_SizeAlloc *_Nonnull);
 static void GLX_PostMoveCallback(AG_Window *_Nonnull, AG_SizeAlloc *_Nonnull);
 static void GLX_SetTransientFor(AG_Window *, AG_Window *_Nullable);
@@ -286,7 +286,7 @@ GLX_Open(void *_Nonnull obj, const char *_Nullable spec)
 	AG_Driver *drv = obj;
 	AG_DriverGLX *glx = obj;
 
-	if (GLX_InitGlobals() == -1)
+	if (GLX_InitGlobals(drv) == -1)
 		return (-1);
 
 	AG_MutexLock(&agDisplayLock);
@@ -2321,7 +2321,7 @@ GLX_EventEpilogue(AG_EventSink *_Nonnull es, AG_Event *_Nonnull event)
 }
 
 static int
-GLX_InitGlobals(void)
+GLX_InitGlobals(AG_Driver *_Nonnull drvFirst)
 {
 	int err, ev, xfd;
 
@@ -2395,16 +2395,20 @@ GLX_InitGlobals(void)
 #endif
 
 #ifdef AG_UNICODE
-	/* Initialize X Input Methods */
-	XSetLocaleModifiers("");
-	agXIM = XOpenIM(agDisplay, 0, 0, 0);
-	if(!agXIM) {
-		XSetLocaleModifiers("@im=none");
+	if (AG_Defined(drvFirst, "no-im")) {
+		Debug(drvFirst, "Disabling input methods (no-im)\n");
+	} else {
+		/* Initialize X Input Methods */
+		XSetLocaleModifiers("");
 		agXIM = XOpenIM(agDisplay, 0, 0, 0);
+		if(!agXIM) {
+			XSetLocaleModifiers("@im=none");
+			agXIM = XOpenIM(agDisplay, 0, 0, 0);
+		}
+		agXIC = XCreateIC(agXIM, XNInputStyle, XIMPreeditNothing |
+		                                       XIMStatusNothing, NULL);
+		XSetICFocus(agXIC);
 	}
-	agXIC = XCreateIC(agXIM, XNInputStyle, XIMPreeditNothing |
-	                                       XIMStatusNothing, NULL);
-	XSetICFocus(agXIC);
 #endif
 
 	agClipboardWindow = None;
