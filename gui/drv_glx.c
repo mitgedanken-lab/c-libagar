@@ -672,15 +672,49 @@ GLX_GetNextEvent(void *_Nullable drvCaller, AG_DriverEvent *_Nonnull dev)
 			AG_MutexUnlock(&agDisplayLock);
 			return (0);
 		}
+		if (XLookupString(&xev.xkey, xkbBuf, sizeof(xkbBuf), NULL, &xkbCompStatus) >= 1) {
+			ch = (AG_Char)xkbBuf[0];
+		} else {
+			ch = 0;
+		}
+		if (!LookupKeyCode(xev.xkey.keycode, &ks)) {
+			AG_SetError("KeyRelease: Unknown keycode: %d", (int)xev.xkey.keycode);
+			AG_MutexUnlock(&agDisplayLock);
+			return (-1);
+		}
 		AG_MutexUnlock(&agDisplayLock);
-		/* FALLTHROUGH */
+
+		if ((win = LookupWindowByID(xev.xkey.window)) == NULL) {
+			return (-1);
+		}
+#ifdef DEBUG_XEVENTS
+		Debug(win, "KeyRelease(%u)\n", (Uint)xev.xkey.keycode);
+#endif
+		AG_KeyboardUpdate(WIDGET(win)->drv->kbd, AG_KEY_RELEASED, ks);
+
+		dev->type = AG_DRIVER_KEY_UP;
+		dev->win = win;
+		dev->key.ks = ks;
+		dev->key.ucs = ch;
+		break;
 	case KeyPress:
 		AG_MutexLock(&agDisplayLock);
 #ifdef AG_UNICODE
 		if (agXIC) {
-			XwcLookupString(agXIC, &xev.xkey,
-			    (wchar_t *)&ch, 1,
-			    NULL, NULL);
+			wchar_t wch;
+			Status status;
+
+			if (XwcLookupString(agXIC, &xev.xkey, &wch, 1,
+			    NULL, &status) == 0) {
+				ch = (AG_Char)xkbBuf[0];
+			} else {
+				if (status != XBufferOverflow &&
+				    status != XLookupNone) {
+					ch = (AG_Char)wch;
+				} else {
+					ch = (AG_Char)xkbBuf[0];
+				}
+			}
 		} else
 #endif /* AG_UNICODE */
 		{
@@ -693,8 +727,7 @@ GLX_GetNextEvent(void *_Nullable drvCaller, AG_DriverEvent *_Nonnull dev)
 		}
 
 		if (!LookupKeyCode(xev.xkey.keycode, &ks)) {
-			AG_SetError(_("Keyboard event: Unknown keycode: %d"),
-			    (int)xev.xkey.keycode);
+			AG_SetError("KeyPress: Unknown keycode: %d", (int)xev.xkey.keycode);
 			AG_MutexUnlock(&agDisplayLock);
 			return (-1);
 		}
@@ -704,14 +737,11 @@ GLX_GetNextEvent(void *_Nullable drvCaller, AG_DriverEvent *_Nonnull dev)
 			return (-1);
 		}
 #ifdef DEBUG_XEVENTS
-		Debug(win, "Key%s(%u)\n", (xev.type == KeyPress) ? "Press" : "Release", (Uint)xev.xkey.keycode);
+		Debug(win, "KeyPress(%u)\n", (Uint)xev.xkey.keycode);
 #endif
-		AG_KeyboardUpdate(WIDGET(win)->drv->kbd,
-		    (xev.type == KeyPress) ? AG_KEY_PRESSED : AG_KEY_RELEASED,
-		    ks);
+		AG_KeyboardUpdate(WIDGET(win)->drv->kbd, AG_KEY_PRESSED, ks);
 
-		dev->type = (xev.type == KeyPress) ? AG_DRIVER_KEY_DOWN :
-		                                     AG_DRIVER_KEY_UP;
+		dev->type = AG_DRIVER_KEY_DOWN;
 		dev->win = win;
 		dev->key.ks = ks;
 		dev->key.ucs = ch;
