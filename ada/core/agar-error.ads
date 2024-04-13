@@ -14,15 +14,25 @@ with Interfaces.C.Strings;
 --
 
 package Agar.Error is
-
+  --
+  -- Retrieve the last error message string.
+  -- 
   function Get_Error return String;
 
+  --
+  -- Set the error message string.
+  --
   procedure Set_Error (Message : in String);
 
+  --
+  -- Print the given error message and abort.
+  --
   procedure Fatal_Error (Message : in String);
-  
+ 
+  --
+  -- Define an alternate routine to handle fatal abort errors.
+  --
   type Error_Callback_Access is access procedure (Message : in String);
-
   procedure Set_Fatal_Callback (Callback : Error_Callback_Access);
 
   private

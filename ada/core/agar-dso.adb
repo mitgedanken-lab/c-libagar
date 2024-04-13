@@ -3,7 +3,7 @@
 --                             A G A R . D S O                              --
 --                                 B o d y                                  --
 --                                                                          --
--- Copyright (c) 2018-2019, Julien Nadeau Carriere (vedge@csoft.net)        --
+-- Copyright (c) 2018-2024, Julien Nadeau Carriere (vedge@csoft.net)        --
 -- Copyright (c) 2010, coreland (mark@coreland.ath.cx)                      --
 --                                                                          --
 -- Permission to use, copy, modify, and/or distribute this software for any --
@@ -23,6 +23,9 @@ with Ada.Unchecked_Conversion;
 package body Agar.DSO is
   use type C.int;
 
+  --
+  -- Load a dynamic library file into the current process's address space.
+  --
   function Load (Name : in String) return DSO_Access
   is
     Ch_Name : aliased C.char_array := C.To_C (Name);
@@ -32,18 +35,28 @@ package body Agar.DSO is
        Flags => 0);
   end Load;
 
+  --
+  -- Remove a dynamic library object from the current process's address space.
+  --
   function Unload (DSO : DSO_Not_Null_Access) return Boolean
   is begin
     return 1 = AG_UnloadDSO (DSO);
   end Unload;
 
+  --
+  -- Return an existing, loaded dynamic library object by name (or null).
+  --
   function Lookup (Name : in String) return DSO_Access
   is
     Ch_Name : aliased C.char_array := C.To_C (Name);
   begin
     return AG_LookupDSO (CS.To_Chars_Ptr (Ch_Name'Unchecked_Access));
   end Lookup;
-  
+ 
+  --
+  -- Return a list of available dynamically-loaded library files.
+  -- Scans the registered module directories for files with matching extensions.
+  -- 
   function Get_List return DSO_List
   is
     use type C.unsigned;
@@ -72,6 +85,11 @@ package body Agar.DSO is
 
   end Get_List;
 
+  --
+  -- Resolve the specified symbol in a dynamically-loaded library.
+  -- Return a generic pointer to the referenced data.
+  -- Returns null if the symbol could not be resolved.
+  --
   function Symbol_Lookup
     (DSO    : in DSO_Not_Null_Access;
      Symbol : in String) return Subprogram_Access_Type

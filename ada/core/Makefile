@@ -22,6 +22,7 @@ SRCS=		ag_dso.c \
 		agar-dso.adb \
 		agar-error.adb \
 		agar-event.adb \
+		agar-event_loop.adb \
 		agar-init.adb \
 		agar-object.adb \
 		agar-timer.adb \

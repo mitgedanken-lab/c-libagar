@@ -11,7 +11,7 @@ float       ag_event_get_float(AG_Event *event, unsigned i)     { return AG_FLOA
 double      ag_event_get_double(AG_Event *event, unsigned i)    { return AG_DOUBLE(i); }
 
 void       *ag_event_get_ptr_named(AG_Event *event, const char *s)       { return AG_PTR_NAMED(s); }
-const void *ag_event_get_const_ptr_named(AG_Event *event, const char *s) { return AG_PTR_NAMED(s); }
+const void *ag_event_get_const_ptr_named(AG_Event *event, const char *s) { return AG_cPTR_NAMED(s); }
 char       *ag_event_get_string_named(AG_Event *event, const char *s)    { return AG_STRING_NAMED(s); }
 int         ag_event_get_int_named(AG_Event *event, const char *s)       { return AG_INT_NAMED(s); }
 unsigned    ag_event_get_uint_named(AG_Event *event, const char *s)      { return AG_UINT_NAMED(s); }
