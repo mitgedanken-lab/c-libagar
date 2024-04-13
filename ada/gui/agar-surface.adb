@@ -18,7 +18,6 @@
 -- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.           --
 ------------------------------------------------------------------------------
 with Agar.Error;
-with Ada.Text_IO;
 
 package body Agar.Surface is
   
@@ -128,13 +127,11 @@ package body Agar.Surface is
     if GL_Texture   then Flags := Flags or SURFACE_GL_TEXTURE; end if;
 
     if Format = null then
-      Ada.Text_IO.Put_Line("Format is null, auto-selecting");
       case (Mode) is
         when PACKED =>
 #if AG_MODEL = AG_LARGE
           case (Bits_per_Pixel) is
             when 64 =>
-              Ada.Text_IO.Put_Line("64-bit RGBA");
               return AG_SurfaceRGBA
                 (W              => C.unsigned(W),
                  H              => C.unsigned(H),
@@ -145,7 +142,6 @@ package body Agar.Surface is
                  B_Mask         => 16#0000ffff00000000#,
                  A_Mask         => 16#ffff000000000000#);
             when 48 =>
-              Ada.Text_IO.Put_Line("48-bit RGB");
               return AG_SurfaceRGBA
                 (W              => C.unsigned(W),
                  H              => C.unsigned(H),
@@ -161,7 +157,6 @@ package body Agar.Surface is
 #end if;
           case (Bits_per_Pixel) is
             when 32 =>
-              Ada.Text_IO.Put_Line("32-bit RGBA");
               return AG_SurfaceRGBA
                 (W              => C.unsigned(W),
                  H              => C.unsigned(H),
@@ -172,7 +167,6 @@ package body Agar.Surface is
                  B_Mask         => 16#00ff0000#,
                  A_Mask         => 16#ff000000#);
             when 24 =>
-              Ada.Text_IO.Put_Line("24-bit RGB");
               return AG_SurfaceRGBA
                 (W              => C.unsigned(W),
                  H              => C.unsigned(H),
@@ -183,7 +177,6 @@ package body Agar.Surface is
                  B_Mask         => 16#00ff0000#,
                  A_Mask         => 0);
             when 16 =>
-              Ada.Text_IO.Put_Line("16-bit RGBA");
               return AG_SurfaceRGBA
                 (W              => C.unsigned(W),
                  H              => C.unsigned(H),
@@ -194,7 +187,6 @@ package body Agar.Surface is
                  B_Mask         => 16#0f00#,
                  A_Mask         => 16#f000#);
             when 12 =>
-              Ada.Text_IO.Put_Line("12-bit RGB");
               return AG_SurfaceRGBA
                 (W              => C.unsigned(W),
                  H              => C.unsigned(H),
@@ -208,14 +200,12 @@ package body Agar.Surface is
               null;
           end case;
         when INDEXED =>
-          Ada.Text_IO.Put_Line(Integer'Image(Bits_per_Pixel) & "-bit Indexed");
           return AG_SurfaceIndexed
             (W              => C.unsigned(W),
              H              => C.unsigned(H),
              Bits_per_Pixel => C.unsigned(Bits_per_Pixel),
              Flags          => Flags);
         when GRAYSCALE =>
-          Ada.Text_IO.Put_Line(Integer'Image(Bits_per_Pixel) & "-bit Grayscale");
           return AG_SurfaceGrayscale
             (W              => C.unsigned(W),
              H              => C.unsigned(H),
