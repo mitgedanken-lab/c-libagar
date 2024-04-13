@@ -4,8 +4,7 @@ include Makefile.config
 PROG=		agar_ada_demo
 MAN1=		agar_ada_demo.1
 
-SRCS=		agar_ada_demo.adb \
-		myeventhandler.adb
+SRCS=		agar_ada_demo.adb
 
 CFLAGS+=	${AGAR_ADA_CFLAGS} ${AGAR_ADA_CORE_CFLAGS} ${AGAR_CFLAGS}
 LIBS+=		${AGAR_ADA_LIBS} ${AGAR_ADA_CORE_LIBS} ${AGAR_LIBS}

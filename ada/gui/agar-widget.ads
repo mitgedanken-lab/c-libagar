@@ -1785,6 +1785,19 @@ package Agar.Widget is
 
   for Window_Alignment'Size use C.int'Size;
 
+  for Window_Alignment use
+    (NO_ALIGNMENT   => 0,
+     TOP_LEFT       => 1,
+     TOP_CENTER     => 2,
+     TOP_RIGHT      => 3,
+     MIDDLE_LEFT    => 4,
+     MIDDLE_CENTER  => 5,
+     MIDDLE_RIGHT   => 6,
+     BOTTOM_LEFT    => 7,
+     BOTTOM_CENTER  => 8,
+     BOTTOM_RIGHT   => 9,
+     LAST_ALIGNMENT => 10);
+
   type Window_Caption is array (1 .. CAPTION_MAX) of
     aliased C.char with Convention => C;
   type Window_Private_t is array (1 .. $SIZEOF_AG_WindowPvt) of
@@ -1797,6 +1810,9 @@ package Agar.Widget is
   end record
     with Convention => C;
 
+  --------------------------
+  -- Agar window instance --
+  --------------------------
   type Window is limited record
     Super                : aliased Widget;    -- ( Widget -> Window )
     Flags                : C.unsigned;        -- WINDOW_* flags (below)
@@ -1851,6 +1867,7 @@ package Agar.Widget is
   WINDOW_NO_CLIPPING      : constant C.unsigned := 16#0020_0000#; -- No clipping rectangle over window
   WINDOW_MODKEY_EVENTS    : constant C.unsigned := 16#0040_0000#; -- Modifier keys generate keyup/keydown
   WINDOW_DETACHING        : constant C.unsigned := 16#0080_0000#; -- Detach in progress (read-only)
+  WINDOW_INHERIT_ZOOM     : constant C.unsigned := 16#0100_0000#; -- Inherit zoom level from parent
   WINDOW_NO_CURSOR_CHANGE : constant C.unsigned := 16#0400_0000#; -- Disable cursor updates
   WINDOW_FADE_IN          : constant C.unsigned := 16#0800_0000#; -- Fade in (if supported)
   WINDOW_FADE_OUT         : constant C.unsigned := 16#1000_0000#; -- Fade out (if supported)
@@ -2166,10 +2183,56 @@ package Agar.Widget is
     (Driver : in Driver_not_null_Access;
      Descr  : in String) return Keyboard_not_null_Access;
 
-  private
- 
-  -- gui/widget.c
+  ----------------
+  -- Window API --
+  ----------------
 
+  --
+  -- Create a new Agar window.
+  --
+  function New_Window
+    (Caption         : in String  := "";
+     Width           : in Natural := 0;
+     Height          : in Natural := 0;
+     Min_Width       : in Natural := 0;
+     Min_Height      : in Natural := 0;
+     Alignment       : in Window_Alignment := MIDDLE_CENTER;
+     Modal           : in Boolean := False;
+     Maximized       : in Boolean := False;
+     Minimized       : in Boolean := False;
+     Keep_Above      : in Boolean := False;
+     Keep_Below      : in Boolean := False;
+     Deny_Focus      : in Boolean := False;
+     Titlebar        : in Boolean := True;
+     Borders         : in Boolean := True;
+     H_Resize        : in Boolean := True;
+     V_Resize        : in Boolean := True;
+     Close_Button    : in Boolean := True;
+     Minimize_Button : in Boolean := True;
+     Maximize_Button : in Boolean := True;
+     Tileable        : in Boolean := False;
+     BG_Fill         : in Boolean := True;
+     Main            : in Boolean := False;
+     H_Maximize      : in Boolean := False;
+     V_Maximize      : in Boolean := False;
+     Movable         : in Boolean := True;
+     Inherit_Zoom    : in Boolean := False;
+     Fade_In         : in Boolean := False;
+     Fade_Out        : in Boolean := False) return Window_not_null_Access;
+
+  procedure Show_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowShow";
+
+  procedure Hide_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowHide";
+
+  private
+
+  ------------------
+  -- gui/widget.c --
+  ------------------
   function AG_WidgetSetFocusable
     (Widget : in Widget_not_null_Access;
      Enable : in C.int) return C.int
@@ -2239,18 +2302,64 @@ package Agar.Widget is
      Button    : Mouse_Button)
     with Import, Convention => C, Link_Name => "AG_ProcessMouseButtonDown";
 
-  -- gui/keyboard.c
+  --------------------
+  -- gui/keyboard.c --
+  --------------------
 
   function AG_KeyboardNew
     (Driver : in Driver_not_null_Access;
      Descr  : in CS.chars_ptr) return Keyboard_not_null_Access
     with Import, Convention => C, Link_Name => "AG_KeyboardNew";
 
-  -- gui/mouse.c
-    --
+  -----------------
+  -- gui/mouse.c --
+  -----------------
+
   function AG_MouseNew
     (Driver : in Driver_not_null_Access;
      Descr  : in CS.chars_ptr) return Mouse_not_null_Access
     with Import, Convention => C, Link_Name => "AG_MouseNew";
+
+  ------------------
+  -- gui/window.c --
+  ------------------
+
+  function AG_WindowNew
+    (Flags : in C.unsigned) return Window_Access
+    with Import, Convention => C, Link_Name => "AG_WindowNew";
+
+  procedure AG_WindowSetCaptionS
+    (Window  : in Window_not_null_Access;
+     Caption : in CS.chars_ptr)
+    with Import, Convention => C, Link_Name => "AG_WindowSetCaptionS";
+
+  procedure AG_WindowShow
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowShow";
+
+  procedure AG_WindowHide
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowHide";
+
+  procedure AG_WindowMaximize
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowMaximize";
+
+  procedure AG_WindowMinimize
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowMinimize";
+
+  procedure AG_WindowSetGeometryAligned
+    (Window    : in Window_not_null_Access;
+     Alignment : in C.int;
+     Width     : in C.int;
+     Height    : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetGeometryAligned";
+
+  procedure AG_WindowSetMinSize
+    (Window    : in Window_not_null_Access;
+     Width     : in C.int;
+     Height    : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetMinSize";
 
 end Agar.Widget;

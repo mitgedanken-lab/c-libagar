@@ -305,4 +305,103 @@ package body Agar.Widget is
        Descr  => CS.To_Chars_Ptr(Ch_Descr'Unchecked_Access));
   end;
 
+  ----------------
+  -- Window API --
+  ----------------
+
+  --
+  -- Create a new Agar window.
+  --
+  function New_Window
+    (Caption         : in String  := "";
+     Width           : in Natural := 0;
+     Height          : in Natural := 0;
+     Min_Width       : in Natural := 0;
+     Min_Height      : in Natural := 0;
+     Alignment       : in Window_Alignment := MIDDLE_CENTER;
+     Modal           : in Boolean := False;
+     Maximized       : in Boolean := False;
+     Minimized       : in Boolean := False;
+     Keep_Above      : in Boolean := False;
+     Keep_Below      : in Boolean := False;
+     Deny_Focus      : in Boolean := False;
+     Titlebar        : in Boolean := True;
+     Borders         : in Boolean := True;
+     H_Resize        : in Boolean := True;
+     V_Resize        : in Boolean := True;
+     Close_Button    : in Boolean := True;
+     Minimize_Button : in Boolean := True;
+     Maximize_Button : in Boolean := True;
+     Tileable        : in Boolean := False;
+     BG_Fill         : in Boolean := True;
+     Main            : in Boolean := False;
+     H_Maximize      : in Boolean := False;
+     V_Maximize      : in Boolean := False;
+     Movable         : in Boolean := True;
+     Inherit_Zoom    : in Boolean := False;
+     Fade_In         : in Boolean := False;
+     Fade_Out        : in Boolean := False) return Window_not_null_Access
+  is
+    C_Flags    : C.unsigned := 0;
+    Ch_Caption : aliased C.char_array := C.To_C (Caption);
+    Win        : Window_Access;
+  begin
+    if (Modal)               then C_Flags := C_Flags or WINDOW_MODAL;         end if;
+    if (Main)                then C_Flags := C_Flags or WINDOW_MAIN;          end if;
+    if (Keep_Above)          then C_Flags := C_Flags or WINDOW_KEEP_ABOVE;    end if;
+    if (Keep_Below)          then C_Flags := C_Flags or WINDOW_KEEP_BELOW;    end if;
+    if (Deny_Focus)          then C_Flags := C_Flags or WINDOW_DENY_FOCUS;    end if;
+    if (not Titlebar)        then C_Flags := C_Flags or WINDOW_NO_TITLE;      end if;
+    if (not Borders)         then C_Flags := C_Flags or WINDOW_NO_BORDERS;    end if;
+    if (not H_Resize)        then C_Flags := C_Flags or WINDOW_NO_H_RESIZE;   end if;
+    if (not V_Resize)        then C_Flags := C_Flags or WINDOW_NO_V_RESIZE;   end if;
+    if (not Close_Button)    then C_Flags := C_Flags or WINDOW_NO_CLOSE;      end if;
+    if (not Minimize_Button) then C_Flags := C_Flags or WINDOW_NO_MINIMIZE;   end if;
+    if (not Maximize_Button) then C_Flags := C_Flags or WINDOW_NO_MAXIMIZE;   end if;
+    if (Tileable)            then C_Flags := C_Flags or WINDOW_TILEABLE;      end if;
+    if (not BG_Fill)         then C_Flags := C_Flags or WINDOW_NO_BACKGROUND; end if;
+    if (Main)                then C_Flags := C_Flags or WINDOW_MAIN;          end if;
+    if (H_Maximize)          then C_Flags := C_Flags or WINDOW_H_MAXIMIZE;    end if;
+    if (V_Maximize)          then C_Flags := C_Flags or WINDOW_V_MAXIMIZE;    end if;
+    if (not Movable)         then C_Flags := C_Flags or WINDOW_NO_MOVE;       end if;
+    if (Inherit_Zoom)        then C_Flags := C_Flags or WINDOW_INHERIT_ZOOM;  end if;
+    if (Fade_In)             then C_Flags := C_Flags or WINDOW_FADE_IN;       end if;
+    if (Fade_Out)            then C_Flags := C_Flags or WINDOW_FADE_Out;      end if;
+
+    Win := AG_WindowNew(C_Flags);
+
+    pragma Assert (Win /= null);
+
+    if (Caption /= "") then
+      AG_WindowSetCaptionS
+        (Window  => Win,
+         Caption => CS.To_Chars_Ptr(Ch_Caption'Unchecked_Access));
+    end if;
+
+    if (Width /= 0 or Height /= 0) then
+      AG_WindowSetGeometryAligned
+        (Window    => Win,
+         Alignment => C.int(Alignment'Enum_Rep),
+         Width     => C.int(Width),
+         Height    => C.int(Height));
+    end if;
+
+    if (Min_Width /= 0 or Min_Height /= 0) then
+      AG_WindowSetMinSize
+        (Window  => Win,
+         Width   => C.int(Min_Width),
+         Height  => C.int(Min_Height));
+    end if;
+
+    if (Maximized) then
+      AG_WindowMaximize(Win);
+    end if;
+    if (Minimized) then
+      AG_WindowMinimize(Win);
+    end if;
+
+    return Win;
+
+  end New_Window;
+
 end Agar.Widget;

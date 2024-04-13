@@ -464,7 +464,7 @@ echo '    CFLAGS       C compiler flags'
 echo '    CPP          C preprocessor'
 echo '    CPPFLAGS     C preprocessor flags'
 echo '    LDFLAGS      C linker flags'
-echo '    LIBS         Libraries passed to binder'
+echo '    LIBS         Libraries to link against'
 exit 1
 fi
 if [ "${show_version}" = "yes" ]; then
@@ -2039,6 +2039,7 @@ $ECHO_N 'checking for Agar...'
 $ECHO_N '# checking for Agar...' >>config.log
 # BEGIN agar(1.6.0 ${prefix_agar})
 AGAR_VERSION=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-config" -a ! -d "${prefix_agar}/bin/agar-config" ]; then
 AGAR_VERSION=`${prefix_agar}/bin/agar-config --version`
@@ -2116,6 +2117,7 @@ if [ "${MK_VERSION_OK}" = "yes" ]; then
 $ECHO_N 'checking whether Agar works...'
 $ECHO_N '# checking whether Agar works...' >>config.log
 AGAR_CFLAGS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-config" -a ! -d "${prefix_agar}/bin/agar-config" ]; then
 AGAR_CFLAGS=`${prefix_agar}/bin/agar-config --cflags`
@@ -2141,6 +2143,7 @@ done
 IFS=$bb_save_IFS
 fi
 AGAR_LIBS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-config" -a ! -d "${prefix_agar}/bin/agar-config" ]; then
 AGAR_LIBS=`${prefix_agar}/bin/agar-config --libs`
@@ -2258,6 +2261,7 @@ $ECHO_N 'checking for Agar-Core...'
 $ECHO_N '# checking for Agar-Core...' >>config.log
 # BEGIN agar-core(1.6.0 ${prefix_agar})
 AGAR_CORE_VERSION=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-core-config" -a ! -d "${prefix_agar}/bin/agar-core-config" ]; then
 AGAR_CORE_VERSION=`${prefix_agar}/bin/agar-core-config --version`
@@ -2335,6 +2339,7 @@ if [ "${MK_VERSION_OK}" = "yes" ]; then
 $ECHO_N 'checking whether Agar-Core works...'
 $ECHO_N '# checking whether Agar-Core works...' >>config.log
 AGAR_CORE_CFLAGS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-core-config" -a ! -d "${prefix_agar}/bin/agar-core-config" ]; then
 AGAR_CORE_CFLAGS=`${prefix_agar}/bin/agar-core-config --cflags`
@@ -2360,6 +2365,7 @@ done
 IFS=$bb_save_IFS
 fi
 AGAR_CORE_LIBS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-core-config" -a ! -d "${prefix_agar}/bin/agar-core-config" ]; then
 AGAR_CORE_LIBS=`${prefix_agar}/bin/agar-core-config --libs`
@@ -2490,6 +2496,7 @@ $ECHO_N 'checking for Agar definitions...'
 $ECHO_N '# checking for Agar definitions...' >>config.log
 # BEGIN agar.defs(1.6.0 ${prefix_agar})
 AGAR_VERSION=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-config" -a ! -d "${prefix_agar}/bin/agar-config" ]; then
 AGAR_VERSION=`${prefix_agar}/bin/agar-config --version`
@@ -2567,6 +2574,7 @@ if [ "${MK_VERSION_OK}" = "yes" ]; then
 $ECHO_N 'checking Agar definitions...'
 $ECHO_N '# checking Agar definitions...' >>config.log
 AGAR_CFLAGS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-config" -a ! -d "${prefix_agar}/bin/agar-config" ]; then
 AGAR_CFLAGS=`${prefix_agar}/bin/agar-config --cflags`
@@ -2592,6 +2600,7 @@ done
 IFS=$bb_save_IFS
 fi
 AGAR_LIBS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar}" != "" ]; then
 if [ -x "${prefix_agar}/bin/agar-config" -a ! -d "${prefix_agar}/bin/agar-config" ]; then
 AGAR_LIBS=`${prefix_agar}/bin/agar-config --libs`
@@ -3075,6 +3084,7 @@ $ECHO_N 'checking for Ada bindings to Agar-Core...'
 $ECHO_N '# checking for Ada bindings to Agar-Core...' >>config.log
 # BEGIN agar-ada-core(1.6.0 ${prefix_agar_ada})
 AGAR_ADA_CORE_VERSION=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar_ada}" != "" ]; then
 if [ -x "${prefix_agar_ada}/bin/agar-ada-core-config" -a ! -d "${prefix_agar_ada}/bin/agar-ada-core-config" ]; then
 AGAR_ADA_CORE_VERSION=`${prefix_agar_ada}/bin/agar-ada-core-config --version`
@@ -3152,6 +3162,7 @@ if [ "${MK_VERSION_OK}" = "yes" ]; then
 $ECHO_N 'checking whether Agar-Core Ada bindings work...'
 $ECHO_N '# checking whether Agar-Core Ada bindings work...' >>config.log
 AGAR_ADA_CORE_CFLAGS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar_ada}" != "" ]; then
 if [ -x "${prefix_agar_ada}/bin/agar-ada-core-config" -a ! -d "${prefix_agar_ada}/bin/agar-ada-core-config" ]; then
 AGAR_ADA_CORE_CFLAGS=`${prefix_agar_ada}/bin/agar-ada-core-config --cflags`
@@ -3177,6 +3188,7 @@ done
 IFS=$bb_save_IFS
 fi
 AGAR_ADA_CORE_LIBS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar_ada}" != "" ]; then
 if [ -x "${prefix_agar_ada}/bin/agar-ada-core-config" -a ! -d "${prefix_agar_ada}/bin/agar-ada-core-config" ]; then
 AGAR_ADA_CORE_LIBS=`${prefix_agar_ada}/bin/agar-ada-core-config --libs`
@@ -3315,6 +3327,7 @@ $ECHO_N 'checking for Ada bindings to Agar-GUI...'
 $ECHO_N '# checking for Ada bindings to Agar-GUI...' >>config.log
 # BEGIN agar-ada(1.6.0 ${prefix_agar_ada})
 AGAR_ADA_VERSION=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar_ada}" != "" ]; then
 if [ -x "${prefix_agar_ada}/bin/agar-ada-config" -a ! -d "${prefix_agar_ada}/bin/agar-ada-config" ]; then
 AGAR_ADA_VERSION=`${prefix_agar_ada}/bin/agar-ada-config --version`
@@ -3392,6 +3405,7 @@ if [ "${MK_VERSION_OK}" = "yes" ]; then
 $ECHO_N 'checking whether Agar Ada bindings work...'
 $ECHO_N '# checking whether Agar Ada bindings work...' >>config.log
 AGAR_ADA_CFLAGS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar_ada}" != "" ]; then
 if [ -x "${prefix_agar_ada}/bin/agar-ada-config" -a ! -d "${prefix_agar_ada}/bin/agar-ada-config" ]; then
 AGAR_ADA_CFLAGS=`${prefix_agar_ada}/bin/agar-ada-config --cflags`
@@ -3417,6 +3431,7 @@ done
 IFS=$bb_save_IFS
 fi
 AGAR_ADA_LIBS=
+MK_EXEC_FOUND=No
 if [ "${prefix_agar_ada}" != "" ]; then
 if [ -x "${prefix_agar_ada}/bin/agar-ada-config" -a ! -d "${prefix_agar_ada}/bin/agar-ada-config" ]; then
 AGAR_ADA_LIBS=`${prefix_agar_ada}/bin/agar-ada-config --libs`
@@ -3568,10 +3583,8 @@ if [ "${enable_debug}" = "yes" ]
  then
 ADAFLAGS="$ADAFLAGS -g"
 CFLAGS="$CFLAGS -g"
-CXXFLAGS="$CXXFLAGS -g"
 fi
 CFLAGS="$CFLAGS -I$BLD"
-CXXFLAGS="$CXXFLAGS -I$BLD"
 echo "ADA=$ADA" >>Makefile.config
 echo "ADABFLAGS=$ADABFLAGS" >>Makefile.config
 echo "ADABIND=$ADABIND" >>Makefile.config
@@ -3591,7 +3604,6 @@ echo "BINDIR=$BINDIR" >>Makefile.config
 echo "CC=$CC" >>Makefile.config
 echo "CC_COMPILE=$CC_COMPILE" >>Makefile.config
 echo "CFLAGS=$CFLAGS" >>Makefile.config
-echo "CXXFLAGS=$CXXFLAGS" >>Makefile.config
 echo "DATADIR=$DATADIR" >>Makefile.config
 echo "ENABLE_NLS=$ENABLE_NLS" >>Makefile.config
 echo "EXECSUFFIX=$EXECSUFFIX" >>Makefile.config

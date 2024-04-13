@@ -7,13 +7,14 @@ with Agar.Init;
 with Agar.Error;
 with Agar.Data_Source;
 with Agar.Event;
+with Agar.Event_Loop;
 with Agar.Timer;
 with Agar.Object;
 
 with Agar.Init_GUI;
 with Agar.Surface; use Agar.Surface;
 with Agar.Text;
---with Agar.Widget;
+with Agar.Widget;
 with Interfaces; use Interfaces;
 with System;
 
@@ -24,10 +25,12 @@ with Ada.Numerics.Elementary_Functions;
 use Ada.Numerics.Elementary_Functions;
 
 procedure agar_ada_demo is
+  package AGText renames Agar.Text;
+  package AGW renames Agar.Widget;
   package T_IO renames Ada.Text_IO;
   package RT renames Ada.Real_Time;
   package LAT1 renames Ada.Characters.Latin_1;
-  
+
   Epoch               : constant RT.Time := RT.Clock;
   Major, Minor, Patch : Natural;
 begin
@@ -265,13 +268,13 @@ begin
       Line_Count     : Natural;
     begin
       -- Push rendering attributes onto the stack.
-      Agar.Text.Push_Text_State;
+      AGText.Push_Text_State;
 
       -- Set the text color.
-      Agar.Text.Text_Set_Color_8(16#73fa00ff#);
+      AGText.Text_Set_Color_8(16#73fa00ff#);
 
       -- Render some text.
-      Hello_Label := Agar.Text.Text_Render("Hello, world!");
+      Hello_Label := AGText.Text_Render("Hello, world!");
       T_IO.Put_Line("Rendered `Hello' is: " &
                     C.unsigned'Image(Hello_Label.W) & "x" &
                     C.unsigned'Image(Hello_Label.H) & "x"  &
@@ -284,13 +287,13 @@ begin
       Free_Surface(Hello_Label);
 
       -- Change some attributes and render text again.
-      Agar.Text.Text_Set_BG_Color_8(16#00ee00ff#);
-      Agar.Text.Text_Set_Color_8(16#000000ff#);
-      Agar.Text.Text_Set_Font
+      AGText.Text_Set_BG_Color_8(16#00ee00ff#);
+      AGText.Text_Set_Color_8(16#000000ff#);
+      AGText.Text_Set_Font
         (Family => "monoalgue",
-         Size   => Agar.Text.Font_Points(18),
+         Size   => AGText.Font_Points(18),
          Bold   => True);
-      Hello_Label := Agar.Text.Text_Render("Hello, world!");
+      Hello_Label := AGText.Text_Render("Hello, world!");
       Blit_Surface
         (Source => Hello_Label,
          Target => Surf,
@@ -299,11 +302,11 @@ begin
       Free_Surface(Hello_Label);
 
       -- Set to 150% of the current font size and dark green BG.
-      Agar.Text.Text_Set_Font
+      AGText.Text_Set_Font
         (Percent => 150);
-      Agar.Text.Text_Set_Color_8(255,150,150);
-      Agar.Text.Text_Set_BG_Color_8(16#005500ff#);
-      Hello_Label := Agar.Text.Text_Render
+      AGText.Text_Set_Color_8(255,150,150);
+      AGText.Text_Set_BG_Color_8(16#005500ff#);
+      Hello_Label := AGText.Text_Render
         ("Agar v" &
          Integer'Image(Major) & "." &
          Integer'Image(Minor) & "." &
@@ -316,7 +319,7 @@ begin
       Free_Surface(Hello_Label);
 
       -- Calculate how large a surface needs to be to fit rendered text.
-      Agar.Text.Size_Text
+      AGText.Size_Text
         (Text => "Agar version " &
                  Integer'Image(Major) & "." &
                  Integer'Image(Minor) & "." &
@@ -326,7 +329,7 @@ begin
       T_IO.Put_Line("Font engine says `Hello' should take" &
                     Natural'Image(Text_W) & " x " & Natural'Image(Text_H) & " pixels");
 
-      Agar.Text.Size_Text
+      AGText.Size_Text
         (Text       => "Hello, one" & LAT1.CR & LAT1.LF &
                        "two"        & LAT1.CR & LAT1.LF &
                        "and three",
@@ -344,7 +347,7 @@ begin
       declare
         X,Y : Integer;
       begin
-        Agar.Text.Text_Align
+        AGText.Text_Align
           (W_Area  => 320,
            H_Area  => 240,
            W_Text  => Text_W,
@@ -357,7 +360,7 @@ begin
       end;      
 
       -- Pop rendering attributes off the stack.
-      Agar.Text.Pop_Text_State;
+      AGText.Pop_Text_State;
     end;
 
     --
@@ -464,7 +467,42 @@ begin
     T_IO.Put_Line ("Surface saved to output.png");
 
     Free_Surface(Surf);
+
   end;
+
+  --
+  -- Create an Agar window.
+  -- 
+  T_IO.Put_Line("Creating an Agar window");
+  declare
+    My_Window : AGW.Window_Access;
+  begin
+    My_Window := AGW.New_Window
+      (Main       => True,
+       Caption    => "Ada Hello!",
+       Width      => 320,
+       Height     => 240,
+       Min_Width  => 64,
+       Min_Height => 64);
+
+    T_IO.Put_Line ("Window created");
+
+    --
+    -- Make the window visible.
+    --
+    AGW.Show_Window(My_Window);
+
+  end;
+
+  --
+  -- Enter the standard Agar event loop.
+  --
+
+  T_IO.Put_Line
+    ("Entering event loop at " &
+     Duration'Image(RT.To_Duration(RT.Clock - Epoch)) & "s");
+
+  Agar.Event_Loop.Event_Loop;
 
   T_IO.Put_Line
     ("Exiting after" &
