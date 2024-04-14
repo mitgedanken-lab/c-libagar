@@ -7,6 +7,7 @@ with Interfaces; use Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with System;
+with Ada.Text_IO;
 with Agar.Types; use Agar.Types;
 with Agar.Object;
 with Agar.Event;
@@ -855,7 +856,10 @@ package Agar.Widget is
 
   type Texture_Coord_Access is access all Texture_Coord with Convention => C;
   subtype Texture_Coord_not_null_Access is not null Texture_Coord_Access;
-  
+
+  ------------------------------------
+  -- Agar Driver (backend) instance --
+  ------------------------------------ 
   type Driver is limited record
     Super         : aliased OBJ.Object;          -- ( Object -> Driver )
     Instance_ID   : C.unsigned;                  -- Driver instance ID
@@ -1309,14 +1313,16 @@ package Agar.Widget is
 
   -- Flags --
   DRIVER_OPENGL   : constant C.unsigned := 16#01#;  -- OpenGL supported
-  DRIVER_SDL      : constant C.unsigned := 16#02#;  -- SDL 1.x calls supported
+  DRIVER_SDL1     : constant C.unsigned := 16#02#;  -- SDL 1.x calls supported
   DRIVER_TEXTURES : constant C.unsigned := 16#04#;  -- Texture mgmt supported
+  DRIVER_SDL2     : constant C.unsigned := 16#08#;  -- SDL 2.x calls supported
+  DRIVER_SDL      : constant C.unsigned := DRIVER_SDL1 or DRIVER_SDL2;
 
   type Driver_Class_Access is access all Driver_Class with Convention => C;
   subtype Driver_Class_not_null_Access is not null Driver_Class_Access;
   
   -----------------------------------------------------------------------------
-  --                    D R I V E R -> D R I V E R  M W                      --
+  --                   D R I V E R -> D R I V E R _ M W                      --
   -----------------------------------------------------------------------------
 
   type Open_Window_Func_Access is access function
@@ -1398,6 +1404,9 @@ package Agar.Widget is
      Geometry     : SizeAlloc_Access;
      Max_W, Max_H : C.unsigned) with Convention => C;
 
+  -------------------------------
+  -- Multi-Window Driver Class --
+  -------------------------------
   type Driver_MW_Class is limited record
     Super                : aliased Driver_Class;     -- ( Driver -> Driver_MW )
     Open_Window          : Open_Window_Func_Access;
@@ -1444,7 +1453,7 @@ package Agar.Widget is
   subtype Driver_MW_not_null_Access is not null Driver_MW_Access;
   
   -----------------------------------------------------------------------------
-  --                    D R I V E R -> D R I V E R  S W                      --
+  --                    D R I V E R -> D R I V E R _ S W                     --
   -----------------------------------------------------------------------------
 
   type Open_Video_Func_Access is access function
@@ -1504,7 +1513,8 @@ package Agar.Widget is
   DRIVER_SW_BGPOPUP    : constant C.unsigned := 16#02#;  -- BG popup menu
   DRIVER_SW_FULLSCREEN : constant C.unsigned := 16#04#;  -- Fullscreen mode
   DRIVER_SW_REDRAW     : constant C.unsigned := 16#08#;  -- Redraw queued
-  
+ 
+  -- Window operations --
   type Window_Operation_t is
     (NONE,
      MOVE,
@@ -1513,6 +1523,9 @@ package Agar.Widget is
      HORIZ_RESIZE);
   for Window_Operation_t'Size use C.int'Size;
 
+  -----------------------------------
+  -- Single-Window Driver Instance --
+  -----------------------------------
   type Driver_SW is limited record
     Super          : aliased Driver;              -- ( Driver -> Driver_SW )
     W,H            : C.unsigned;                  -- Resolution
@@ -1523,7 +1536,7 @@ package Agar.Widget is
     Last_Key_Down_Window : Window_Access;         -- Window with last kbd event
     Modal_Window_Stack   : System.Address;        -- Modal window list TODO
 
-    Window_Operation     : Window_Operation_t;    -- Window op in progress
+    Window_Operation     : Window_Operation_t;    -- Window operation in progress
     Icon_W, Icon_H       : C.int;                 -- Window icon sizes
     Nominal_FPS          : C.unsigned;            -- Nominal frames/second
     Current_FPS          : C.int;                 -- Last calculated FPS
@@ -1610,6 +1623,10 @@ package Agar.Widget is
   for Widget_Private_t'Size use $SIZEOF_AG_WidgetPvt * System.Storage_Unit;
 
   type Widget_Surface_Flags_Access is access all Unsigned_8 with Convention => C;
+
+  --------------------------
+  -- Agar Widget Instance --
+  --------------------------
   type Widget is limited record
     Super            : aliased OBJ.Object;  -- ( Object -> Widget )
     Flags            : C.unsigned;          -- WIDGET_* Flags (below)
@@ -1758,6 +1775,10 @@ package Agar.Widget is
 
   CAPTION_MAX : constant Natural := $AG_WINDOW_CAPTION_MAX;
 
+  --
+  -- EWMH Window Function. May be used to set decoration, stacking position and
+  -- other window behavior settings (depending on underlying WM support).
+  -- 
   type WM_Function is
     (WM_NORMAL,            -- Normal top-level window
      WM_DESKTOP,           -- Desktop feature (e.g., full-screen)
@@ -1775,7 +1796,8 @@ package Agar.Widget is
      WM_DND);              -- Draggable object
 
   for WM_Function'Size use C.int'Size;
- 
+
+  -- Alignment of a window relative to its parent desktop area --
   type Window_Alignment is
     (NO_ALIGNMENT,
      TOP_LEFT,      TOP_CENTER,      TOP_RIGHT,
@@ -1784,7 +1806,6 @@ package Agar.Widget is
      LAST_ALIGNMENT);
 
   for Window_Alignment'Size use C.int'Size;
-
   for Window_Alignment use
     (NO_ALIGNMENT   => 0,
      TOP_LEFT       => 1,
@@ -1798,8 +1819,10 @@ package Agar.Widget is
      BOTTOM_RIGHT   => 9,
      LAST_ALIGNMENT => 10);
 
+  -- Window title text --
   type Window_Caption is array (1 .. CAPTION_MAX) of
     aliased C.char with Convention => C;
+
   type Window_Private_t is array (1 .. $SIZEOF_AG_WindowPvt) of
     aliased Unsigned_8 with Convention => C;
   for Window_Private_t'Size use $SIZEOF_AG_WindowPvt * System.Storage_Unit;
@@ -1908,6 +1931,25 @@ package Agar.Widget is
   --
   function Get_Driver (Driver_ID : C.unsigned) return Driver_Access
     with Import, Convention => C, Link_Name => "ag_get_driver_by_id";
+
+  --
+  -- Return an Object access for a Driver.
+  --
+  function Driver_to_Object
+    (Driver : in Driver_Access) return Agar.Object.Object_Access
+    with Import, Convention => C, Link_Name => "ag_driver_to_object";
+
+  --
+  -- Lock the virtual filesystem of drivers.
+  --
+  procedure Lock_Drivers
+    with Import, Convention => C, Link_Name => "ag_lock_drivers";
+
+  --
+  -- Unlock the virtual filesystem of drivers.
+  --
+  procedure Unlock_Drivers
+    with Import, Convention => C, Link_Name => "ag_unlock_drivers";
 
   --
   -- Dump video memory to a jpeg file in ~/.<progname>/screenshot/.
@@ -2186,12 +2228,22 @@ package Agar.Widget is
   ----------------
   -- Window API --
   ----------------
+     --
+  function Window_to_Widget
+    (Window : in Window_Access) return Widget_Access
+    with Import, Convention => C, Link_Name => "ag_window_to_widget";
+
+  function Window_to_Object
+    (Window : in Window_Access) return Agar.Object.Object_Access
+    with Import, Convention => C, Link_Name => "ag_window_to_object";
 
   --
   -- Create a new Agar window.
   --
   function New_Window
-    (Caption         : in String  := "";
+    (Caption         : in String := "";
+     Name            : in String := "";
+     Driver          : in Driver_Access := null;
      Width           : in Natural := 0;
      Height          : in Natural := 0;
      Min_Width       : in Natural := 0;
@@ -2220,13 +2272,27 @@ package Agar.Widget is
      Fade_In         : in Boolean := False;
      Fade_Out        : in Boolean := False) return Window_not_null_Access;
 
+  --
+  -- Make an Agar window visible.
+  -- 
   procedure Show_Window
     (Window : in Window_not_null_Access)
     with Import, Convention => C, Link_Name => "AG_WindowShow";
 
+  --
+  -- Make an Agar window invisible.
+  -- 
   procedure Hide_Window
     (Window : in Window_not_null_Access)
     with Import, Convention => C, Link_Name => "AG_WindowHide";
+
+  --
+  -- Return an access to an Agar window by name.
+  -- Returns null if no such window exists.
+  -- The agDrivers vfs must be locked.
+  --
+  function Find_Window
+    (Name : in String) return Window_access;
 
   private
 
@@ -2327,6 +2393,20 @@ package Agar.Widget is
   function AG_WindowNew
     (Flags : in C.unsigned) return Window_Access
     with Import, Convention => C, Link_Name => "AG_WindowNew";
+
+  function AG_WindowNewUnder
+    (Driver : in Driver_not_null_Access;
+     Flags  : in C.unsigned) return Window_Access
+    with Import, Convention => C, Link_Name => "AG_WindowNewUnder";
+
+  function AG_WindowNewNamedS
+    (Flags  : in C.unsigned;
+     Name   : in CS.chars_ptr) return Window_Access
+    with Import, Convention => C, Link_Name => "AG_WindowNewNamedS";
+
+  function AG_WindowFind
+    (Name : in CS.chars_ptr) return Window_Access
+    with Import, Convention => C, Link_Name => "AG_WindowFind";
 
   procedure AG_WindowSetCaptionS
     (Window  : in Window_not_null_Access;

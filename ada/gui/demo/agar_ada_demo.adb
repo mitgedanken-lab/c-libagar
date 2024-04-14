@@ -479,11 +479,20 @@ begin
   begin
     My_Window := AGW.New_Window
       (Main       => True,
+       Name       => "My_Window",
        Caption    => "Ada Hello!",
        Width      => 320,
        Height     => 240,
        Min_Width  => 64,
        Min_Height => 64);
+
+    if (Agar.Object.Save
+        (Object => AGW.Window_to_Object(My_Window),
+         File   => "window.out")) then
+      T_IO.Put_Line ("Window state saved to window.out");
+    else
+      T_IO.Put_Line ("Window state save: " & Agar.Error.Get_Error);
+    end if;
 
     T_IO.Put_Line ("Window created");
 

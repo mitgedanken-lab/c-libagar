@@ -3,7 +3,7 @@
 --                          A G A R  . W I D G E T                          --
 --                                 B o d y                                  --
 --                                                                          --
--- Copyright (c) 2018-2019 Julien Nadeau Carriere (vedge@csoft.net)         --
+-- Copyright (c) 2018-2024 Julien Nadeau Carriere (vedge@csoft.net)         --
 --                                                                          --
 -- Permission to use, copy, modify, and/or distribute this software for any --
 -- purpose with or without fee is hereby granted, provided that the above   --
@@ -18,7 +18,6 @@
 -- OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.           --
 ------------------------------------------------------------------------------
 package body Agar.Widget is
-  
   --
   -- Return the first visible widget intersecting a point or enclosing a
   -- rectangle (in view coordinates). Scan all drivers and return first match.
@@ -313,7 +312,9 @@ package body Agar.Widget is
   -- Create a new Agar window.
   --
   function New_Window
-    (Caption         : in String  := "";
+    (Caption         : in String := "";
+     Name            : in String := "";
+     Driver          : in Driver_Access := null;
      Width           : in Natural := 0;
      Height          : in Natural := 0;
      Min_Width       : in Natural := 0;
@@ -343,8 +344,9 @@ package body Agar.Widget is
      Fade_Out        : in Boolean := False) return Window_not_null_Access
   is
     C_Flags    : C.unsigned := 0;
-    Ch_Caption : aliased C.char_array := C.To_C (Caption);
-    Win        : Window_Access;
+    Ch_Name    : aliased C.char_array := C.To_C(Name);
+    Ch_Caption : aliased C.char_array := C.To_C(Caption);
+    Win        : aliased Window_Access;
   begin
     if (Modal)               then C_Flags := C_Flags or WINDOW_MODAL;         end if;
     if (Main)                then C_Flags := C_Flags or WINDOW_MAIN;          end if;
@@ -368,7 +370,22 @@ package body Agar.Widget is
     if (Fade_In)             then C_Flags := C_Flags or WINDOW_FADE_IN;       end if;
     if (Fade_Out)            then C_Flags := C_Flags or WINDOW_FADE_Out;      end if;
 
-    Win := AG_WindowNew(C_Flags);
+    if (Driver /= null) then
+      Win := AG_WindowNewUnder(Driver, C_Flags);
+      if (Name /= "") then
+        Agar.Object.Set_Name
+          (Object => Window_to_Object(Win),
+           Name   => Name);
+      end if;
+    else
+      if (Name /= "") then
+        Win := AG_WindowNewNamedS
+          (Flags => C_Flags,
+           Name  => CS.To_Chars_Ptr(Ch_Name'Unchecked_Access));
+      else
+        Win := AG_WindowNew(C_Flags);
+      end if;
+    end if;
 
     pragma Assert (Win /= null);
 
@@ -400,8 +417,20 @@ package body Agar.Widget is
       AG_WindowMinimize(Win);
     end if;
 
-    return Win;
+    return (Win);
+  end;
 
-  end New_Window;
+  --
+  -- Return an access to an Agar window by name.
+  -- Returns null if no such window exists.
+  -- The agDrivers vfs must be locked.
+  --
+  function Find_Window
+    (Name : in String) return Window_access
+  is
+    Ch_Name : aliased C.char_array := C.To_C(Name);
+  begin
+    return AG_WindowFind(CS.To_Chars_Ptr(Ch_Name'Unchecked_Access));
+  end;
 
 end Agar.Widget;

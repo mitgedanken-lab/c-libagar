@@ -14,7 +14,9 @@ LIB_LINKS=	${CORE_LINKS_STATIC}
 CFLAGS+=	${AGAR_CFLAGS} ${AGAR_ADA_CORE_CFLAGS} ${AGAR_CORE_CFLAGS}
 LIBS+=		${AGAR_LIBS} ${AGAR_ADA_CORE_LIBS} ${AGAR_CORE_LIBS}
 
-SRCS=		agar-init_gui.adb \
+SRCS=		ag_drivers.c \
+		ag_widget.c \
+		agar-init_gui.adb \
 		agar-input_device.ads \
 		agar-surface.adb \
 		agar-widget.adb \
