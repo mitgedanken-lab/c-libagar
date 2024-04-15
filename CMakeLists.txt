@@ -811,6 +811,7 @@ Check_Timerfd()
 Check_Csidl()
 Check_Xbox()
 Check_Mprotect()
+Check_Dirfd()
 
 # Disable floating-point support if an integer-only build is requested.
 if(NOT AGAR_FLOAT)

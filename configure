@@ -8446,6 +8446,54 @@ if [ "${keep_conftest}" != "yes" ]; then
 rm -f conftest$$.c $testdir/conftest$$$EXECSUFFIX
 fi
 # END mprotect
+$ECHO_N 'checking for dirfd()...'
+$ECHO_N '# checking for dirfd()...' >>config.log
+# BEGIN dirfd
+MK_COMPILE_STATUS=OK
+cat << EOT >conftest$$.c
+#include <dirent.h>
+
+int
+main(int argc, char *argv[])
+{
+	DIR *dirp = opendir("foo");
+	int fd = -1;
+	if (dirp != NULL) {
+		fd = dirfd(dirp);
+		closedir(dirp);
+	}
+	return (fd == -1);
+}
+EOT
+echo >>config.log
+echo '# C: HAVE_DIRFD' >>config.log
+echo "cat << EOT >conftest$$.c" >>config.log
+cat conftest$$.c>>config.log
+echo EOT >>config.log
+echo "$CC $CFLAGS $TEST_CFLAGS -o $testdir/conftest$$ conftest$$.c 1>/dev/null 2>>config.log">>config.log
+$CC $CFLAGS $TEST_CFLAGS -o $testdir/conftest$$ conftest$$.c 1>/dev/null 2>>config.log
+if [ "$?" != "0" ]; then
+echo "# failed $?" >>config.log
+MK_COMPILE_STATUS="FAIL $?"
+fi
+if [ "${MK_COMPILE_STATUS}" = "OK" ]; then
+echo 'yes'
+echo '# yes' >>config.log
+HAVE_DIRFD=yes
+bb_o=$bb_incdir/have_dirfd.h
+echo '#ifndef HAVE_DIRFD' >$bb_o
+echo "#define HAVE_DIRFD \"$HAVE_DIRFD\"" >>$bb_o
+echo '#endif' >>$bb_o
+else
+echo 'no'
+echo '# no' >>config.log
+HAVE_DIRFD=no
+echo '#undef HAVE_DIRFD' >$bb_incdir/have_dirfd.h
+fi
+if [ "${keep_conftest}" != "yes" ]; then
+rm -f conftest$$.c $testdir/conftest$$$EXECSUFFIX
+fi
+# END dirfd
 CFLAGS="$CFLAGS -D_AGAR_INTERNAL"
 CFLAGS="$CFLAGS -D_DEFAULT_SOURCE"
 CFLAGS="$CFLAGS -D_BSD_SOURCE"

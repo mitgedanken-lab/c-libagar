@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2004-2019 Julien Nadeau Carriere <vedge@csoft.net>
+ * Copyright (c) 2004-2024 Julien Nadeau Carriere <vedge@csoft.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -75,19 +75,6 @@
 #  include <sys/stat.h>
 # endif
 
-/* for dirfd() */
-# if defined(__NetBSD__)
-#  ifndef _NETBSD_SOURCE
-#   define _NETBSD_SOURCE
-#   define _AGAR_DEFINED_NETBSD_SOURCE
-#  endif
-# elif defined(__APPLE__)
-#  ifndef _DARWIN_C_SOURCE
-#   define _DARWIN_C_SOURCE
-#   define _AGAR_DEFINED_DARWIN_C_SOURCE
-#  endif
-# endif
-
 # include <dirent.h>
 
 # ifdef _AGAR_DEFINED_NETBSD_SOURCE
@@ -107,6 +94,8 @@
 #ifdef _XBOX
 # include <agar/core/xbox.h>
 #endif
+
+#include <agar/config/have_dirfd.h>
 
 int
 AG_MkDir(const char *dir)
@@ -255,7 +244,11 @@ AG_OpenDir(const char *path)
 			    (dir->nents+1)*sizeof(char *));
 			dir->ents[dir->nents++] = Strdup(dent->d_name);
 		}
+# ifdef HAVE_DIRFD
 		dir->fd = dirfd((DIR *)dir->dirp);
+# else
+		dir->fd = -1;
+# endif
 	}
 #endif /* !_WIN32 */
 

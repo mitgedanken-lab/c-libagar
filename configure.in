@@ -327,6 +327,7 @@ check(timerfd)
 check(csidl)
 check(xbox)
 check(mprotect)
+check(dirfd)
 
 # C compiler options
 c_define(_AGAR_INTERNAL)

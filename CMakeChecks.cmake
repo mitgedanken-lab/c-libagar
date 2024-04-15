@@ -1010,6 +1010,36 @@ macro(Disable_Db5)
 endmacro()
 
 #
+# From BSDBuild/dirfd.pm:
+#
+macro(Check_Dirfd)
+	check_c_source_compiles("
+#include <dirent.h>
+
+int
+main(int argc, char *argv[])
+{
+	DIR *dirp = opendir(\"foo\");
+	int fd = -1;
+	if (dirp != NULL) {
+		fd = dirfd(dirp);
+		closedir(dirp);
+	}
+	return (fd == -1);
+}
+" HAVE_DIRFD)
+	if (HAVE_DIRFD)
+		BB_Save_Define(HAVE_DIRFD)
+	else()
+		BB_Save_Undef(HAVE_DIRFD)
+	endif()
+endmacro()
+
+macro(Disable_Dirfd)
+	BB_Save_Undef(HAVE_DIRFD)
+endmacro()
+
+#
 # From BSDBuild/dlopen.pm:
 #
 macro(Check_Dlopen)
@@ -2089,6 +2119,37 @@ macro(Disable_OpenGL)
 	BB_Save_Undef(HAVE_WGL)
 	BB_Save_MakeVar(OPENGL_CFLAGS "")
 	BB_Save_MakeVar(OPENGL_LIBS "")
+endmacro()
+
+#
+# From BSDBuild/openjpeg.pm:
+#
+macro(Check_Zstd)
+	set(OPENJPEG_CFLAGS "")
+	set(OPENJPEG_LIBS "")
+
+	find_package(openjpeg)
+	if(OPENJPEG_FOUND)
+		set(HAVE_OPENJPEG ON)
+		BB_Save_Define(HAVE_OPENJPEG)
+		if(${OPENJPEG_INCLUDE_DIRS})
+			set(OPENJPEG_CFLAGS "-I${OPENJPEG_INCLUDE_DIRS}")
+		endif()
+		set(OPENJPEG_LIBS "${OPENJPEG_LIBRARIES}")
+	else()
+		set(HAVE_OPENJPEG OFF)
+		BB_Save_Undef(HAVE_OPENJPEG)
+	endif()
+
+	BB_Save_MakeVar(OPENJPEG_CFLAGS "${OPENJPEG_CFLAGS}")
+	BB_Save_MakeVar(OPENJPEG_LIBS "${OPENJPEG_LIBS}")
+endmacro()
+
+macro(Disable_Zstd)
+	set(HAVE_OPENJPEG OFF)
+	BB_Save_Undef(HAVE_OPENJPEG)
+	BB_Save_MakeVar(OPENJPEG_CFLAGS "")
+	BB_Save_MakeVar(OPENJPEG_LIBS "")
 endmacro()
 
 #
@@ -3244,6 +3305,41 @@ macro(Disable_Sys_Types_h)
 	BB_Save_Undef(HAVE_64BIT)
 	BB_Save_Undef(HAVE_INT64_T)
 	BB_Save_Undef(HAVE___INT64)
+endmacro()
+
+#
+# From BSDBuild/tiff.pm:
+#
+macro(Check_Tiff)
+	set(TIFF_CFLAGS "")
+	set(TIFF_LIBS "")
+
+	include(FindTIFF)
+	FindTIFF()
+	if(TIFF_FOUND)
+		set(HAVE_TIFF ON)
+		BB_Save_Define(HAVE_TIFF)
+		# TODO
+		BB_Save_Define(HAVE_TIFFXX)
+		if(${TIFF_INCLUDE_DIRS})
+			set(TIFF_CFLAGS "-I${TIFF_INCLUDE_DIRS}")
+		endif()
+		set(TIFF_LIBS "${TIFF_LIBRARIES}")
+	else()
+		set(HAVE_TIFF OFF)
+		BB_Save_Undef(HAVE_TIFF)
+		BB_Save_Undef(HAVE_TIFFXX)
+	endif()
+
+	BB_Save_MakeVar(TIFF_CFLAGS "${TIFF_CFLAGS}")
+	BB_Save_MakeVar(TIFF_LIBS "${TIFF_LIBS}")
+endmacro()
+
+macro(Disable_Tiff)
+	set(HAVE_TIFF OFF)
+	BB_Save_Undef(HAVE_TIFF)
+	BB_Save_MakeVar(TIFF_CFLAGS "")
+	BB_Save_MakeVar(TIFF_LIBS "")
 endmacro()
 
 #
