@@ -390,7 +390,7 @@ if [ "${enable_gui}" != 'no' ]; then
 
 	# Enable SDL2 support if SDL2 is found.
 	if [ "${with_sdl2}" != 'no' ]; then
-		check(sdl2, 2.0.0, ${prefix_sdl2})
+		check(sdl2, 2.0.22, ${prefix_sdl2})
 		if [ "${HAVE_SDL2}" != 'yes' ]; then
 			if [ "${with_sdl2}" = 'yes' ]; then
 				echo "*"

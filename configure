@@ -8691,7 +8691,7 @@ SUBDIR_gui="gui"
  then
 $ECHO_N 'checking for SDL 2.0...'
 $ECHO_N '# checking for SDL 2.0...' >>config.log
-# BEGIN sdl2(2.0.0 ${prefix_sdl2})
+# BEGIN sdl2(2.0.22 ${prefix_sdl2})
 if [ "${prefix_sdl2}" != "" ]; then
 SDL2_PREFIX=
 MK_EXEC_FOUND=No
@@ -8965,7 +8965,7 @@ elif [ $MK_VERSION_MINOR -eq 0 ]; then
 if [ "$MK_VERSION_MICRO" = '' ]; then
 MK_VERSION_OK=yes
 else
-if [ $MK_VERSION_MICRO -ge 0 ]; then
+if [ $MK_VERSION_MICRO -ge 22 ]; then
 MK_VERSION_OK=yes
 fi
 fi
@@ -8975,8 +8975,8 @@ fi
 if [ "${MK_VERSION_OK}" = "no" ]; then
 echo '*'
 echo '# *' >>config.log
-echo "* Minimum required version is 2.0.0 (found $SDL2_VERSION)"
-echo "# * Minimum required version is 2.0.0 (found $SDL2_VERSION)" >>config.log
+echo "* Minimum required version is 2.0.22 (found $SDL2_VERSION)"
+echo "# * Minimum required version is 2.0.22 (found $SDL2_VERSION)" >>config.log
 echo '*'
 echo '# *' >>config.log
 fi
