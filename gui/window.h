@@ -226,7 +226,6 @@ void AG_WindowRaise(AG_Window *_Nonnull);
 void AG_WindowShow(AG_Window *_Nonnull);
 void AG_WindowHide(AG_Window *_Nonnull);
 void AG_WindowDrawQueued(void);
-void AG_WindowResize(AG_Window *_Nonnull);
 
 AG_Window *_Nullable AG_WindowFindFocused(void)
                                          _Pure_Attribute
