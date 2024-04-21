@@ -275,7 +275,7 @@ begin
 
       -- Render some text.
       Hello_Label := AGText.Text_Render("Hello, world!");
-      T_IO.Put_Line("Rendered `Hello' is: " &
+      T_IO.Put_Line("Rendered `Hello' is:" &
                     C.unsigned'Image(Hello_Label.W) & "x" &
                     C.unsigned'Image(Hello_Label.H) & "x"  &
                     C.int'Image(Hello_Label.Format.Bits_per_Pixel) & "bpp");
@@ -327,7 +327,7 @@ begin
          W    => Text_W,
          H    => Text_H);
       T_IO.Put_Line("Font engine says `Hello' should take" &
-                    Natural'Image(Text_W) & " x " & Natural'Image(Text_H) & " pixels");
+                    Natural'Image(Text_W) & " x" & Natural'Image(Text_H) & " pixels");
 
       AGText.Size_Text
         (Text       => "Hello, one" & LAT1.CR & LAT1.LF &
@@ -478,28 +478,98 @@ begin
     My_Window : AGW.Window_Access;
   begin
     My_Window := AGW.New_Window
-      (Main       => True,
-       Name       => "My_Window",
-       Caption    => "Ada Hello!",
-       Width      => 320,
-       Height     => 240,
-       Min_Width  => 64,
-       Min_Height => 64);
+      (Main    => True,
+       Name    => "My_Window",
+       Caption => "Ada Hello!",
+       W       => 320,
+       H       => 240,
+       Min_W   => 64,
+       Min_H   => 64);
 
     if (Agar.Object.Save
         (Object => AGW.Window_to_Object(My_Window),
          File   => "window.out")) then
+
       T_IO.Put_Line ("Window state saved to window.out");
     else
       T_IO.Put_Line ("Window state save: " & Agar.Error.Get_Error);
     end if;
 
-    T_IO.Put_Line ("Window created");
+    T_IO.Put_Line ("Window created. Caption is " & AGW.Get_Window_Caption(My_Window));
 
-    --
-    -- Make the window visible.
-    --
+    -- Set the titlebar text --
+    AGW.Set_Window_Caption(My_Window, "Ada Hello!!");
+
+    -- Adjust window borders (normally used in single-window mode) --
+    --AGW.Set_Window_Borders
+    --  (Window   => My_Window,
+    --   W_Sides => 10);
+
+    -- Hide window on close request --
+    -- AGW.Set_Window_Close_Action(My_Window, AGW.HIDE_WINDOW);
+
+    -- Destroy window on close request --
+    AGW.Set_Window_Close_Action(My_Window, AGW.DETACH_WINDOW);
+
+    -- Make the window visible --
     AGW.Show_Window(My_Window);
+
+    -- Move the window by +100,-200 pixels --
+    -- AGW.Move_Window(My_Window, +100, -200);
+
+    -- Set the minimum window size.
+    -- AGW.Set_Window_Minimum_Size(My_Window, 200, 100);
+    -- AGW.Set_Window_Minimum_Size_Pct(My_Window, 50, 33);
+
+    -- Set an explicit window size and position in pixels.
+    -- AGW.Set_Window_Geometry
+    --   (Window => My_Window,
+    --    X      => 10,
+    --    Y      => 10,
+    --    W      => 420,
+    --    H      => 340);
+
+    -- Set the window size (in pixels) and desktop alignment.
+    -- AGW.Set_Window_Geometry_Aligned
+    --   (Window    => My_Window,
+    --    Alignment => AGW.MIDDLE_CENTER,
+    --    W         => 420,
+    --    H         => 340);
+
+    -- Set the window size (in % of desktop area) and desktop alignment.
+    AGW.Set_Window_Geometry_Aligned_Pct
+      (Window    => My_Window,
+       Alignment => AGW.MIDDLE_CENTER,
+       W_Pct     => 50,
+       H_Pct     => 33);
+
+    -- Compute the alignment offset of a window in pixels.
+    declare
+      X_Align : Integer;
+      Y_Align : Integer;
+    begin
+      AGW.Compute_Window_Alignment(My_Window, X_Align, Y_Align);
+      T_IO.Put_Line ("Window alignment: X =" & X_Align'Img & " Y =" & Y_Align'Img);
+    end;
+
+    -- Set the opacity of a window (for compositing WM).
+    -- AGW.Set_Window_Opacity(My_Window, 0.5);
+
+    -- Enable window slow fade-in (for compositing WM).
+    -- AGW.Set_Window_Fade_In(My_Window, 0.06, 0.2);
+    -- AGW.Set_Window_Fade_Out(My_Window, 0.06, 0.2);
+
+    -- Set the zoom level on a window.
+    -- AGW.Set_Window_Zoom(My_Window, 85);
+
+    -- Maximize/minimize the window.
+    -- AGW.Maximize_Window(My_Window);
+    -- AGW.Minimize_Window(My_Window);
+
+    -- Lower/raise the window's Z-order.
+    -- AGW.Lower_Window(My_Window);
+    -- AGW.Raise_Window(My_Window);
+
 
   end;
 
@@ -508,7 +578,7 @@ begin
   --
 
   T_IO.Put_Line
-    ("Entering event loop at " &
+    ("Entering event loop at" &
      Duration'Image(RT.To_Duration(RT.Clock - Epoch)) & "s");
 
   Agar.Event_Loop.Event_Loop;

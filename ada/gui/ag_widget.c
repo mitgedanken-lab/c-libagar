@@ -33,3 +33,9 @@ ag_window_to_widget(AG_Window *win)
 	return (AG_Widget *)win;
 }
 
+char *
+ag_window_get_caption(AG_Window *win)
+{
+	AG_OBJECT_ISA(win, "AG_Widget:AG_Window:*");
+	return (win->caption);
+}

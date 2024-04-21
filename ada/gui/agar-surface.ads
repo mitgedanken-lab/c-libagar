@@ -122,6 +122,9 @@ package Agar.Surface is
   end record
     with Convention => C;
 
+  type AG_Rect_Access is access all AG_Rect with Convention => C;
+  subtype AG_Rect_not_null_Access is not null AG_Rect_Access;
+
   type Rect_Access is access all AG_Rect with Convention => C;
   subtype Rect_not_null_Access is not null Rect_Access;
   

@@ -11,6 +11,7 @@ with Ada.Text_IO;
 with Agar.Types; use Agar.Types;
 with Agar.Object;
 with Agar.Event;
+with Agar.Error;
 with Agar.Surface;
 with Agar.Input_Device;
 
@@ -128,7 +129,7 @@ package Agar.Widget is
     Button_Count : C.unsigned;                 -- Button count (or 0)
     Button_State : Mouse_Button;               -- Last button state
     X,Y          : C.int;                      -- Last cursor position
-    Xrel, Yrel   : C.int;                      -- Last relative motion
+    X_Rel, Y_Rel : C.int;                      -- Last relative motion
   end record
     with Convention => C;
 
@@ -1119,19 +1120,19 @@ package Agar.Widget is
      Dest_Fn   : SU.Alpha_Func) with Convention => C;
   
   type Draw_Wide_Line_Func_Access is access procedure
-    (Driver    : Driver_not_null_Access;
-     X1,Y1     : C.int;
-     X2,Y2     : C.int;
-     Color     : SU.Color_not_null_Access;
-     Width     : C.C_float) with Convention => C;
+    (Driver : Driver_not_null_Access;
+     X1,Y1  : C.int;
+     X2,Y2  : C.int;
+     Color  : SU.Color_not_null_Access;
+     W      : C.C_float) with Convention => C;
 
   type Draw_Wide_Sti16_Line_Func_Access is access procedure
-    (Driver    : Driver_not_null_Access;
-     X1,Y1     : C.int;
-     X2,Y2     : C.int;
-     Color     : SU.Color_not_null_Access;
-     Width     : C.C_float;
-     Stipple   : Unsigned_16) with Convention => C;
+    (Driver  : Driver_not_null_Access;
+     X1,Y1   : C.int;
+     X2,Y2   : C.int;
+     Color   : SU.Color_not_null_Access;
+     W       : C.C_float;
+     Stipple : Unsigned_16) with Convention => C;
 
   type Draw_Triangle_Func_Access is access procedure
     (Driver    : Driver_not_null_Access;
@@ -1806,18 +1807,36 @@ package Agar.Widget is
      LAST_ALIGNMENT);
 
   for Window_Alignment'Size use C.int'Size;
-  for Window_Alignment use
-    (NO_ALIGNMENT   => 0,
-     TOP_LEFT       => 1,
-     TOP_CENTER     => 2,
-     TOP_RIGHT      => 3,
-     MIDDLE_LEFT    => 4,
-     MIDDLE_CENTER  => 5,
-     MIDDLE_RIGHT   => 6,
-     BOTTOM_LEFT    => 7,
-     BOTTOM_CENTER  => 8,
-     BOTTOM_RIGHT   => 9,
-     LAST_ALIGNMENT => 10);
+
+  -- Opacity of a window (for compositing window managers) --
+  type Window_Opacity is digits 6 range 0.0 .. 1.0;
+
+  -- Fade-in/Fade-out duration  --
+  type Window_Fade_Duration is digits 6 range 0.0 .. 60.0;
+
+  -- Fade-in/Fade-out increment --
+  type Window_Fade_Delta is digits 6 range 0.0 .. 1.0;
+
+  -- Zoom level --
+  type Window_Zoom_Level is new Integer range 0 .. 100;
+
+  type Window_Close_Action is
+    (HIDE_WINDOW,          -- Hide window from view.
+     DETACH_WINDOW);       -- Detach / destroy window.
+  for Window_Close_Action'Size use C.int'Size;
+
+  -- Standard Agar cursor (argument to Map_Cursor()) --
+  type Standard_Cursor is
+    (DEFAULT_CURSOR,
+     FILL_CURSOR,
+     ERASE_CURSOR,
+     PICK_CURSOR,
+     H_RESIZE_CURSOR,
+     V_RESIZE_CURSOR,
+     LOWER_R_DIAGONAL_CURSOR,
+     LOWER_L_DIAGONAL_CURSOR,
+     TEXT_CURSOR,
+     LAST_CURSOR);
 
   -- Window title text --
   type Window_Caption is array (1 .. CAPTION_MAX) of
@@ -2036,9 +2055,9 @@ package Agar.Widget is
   -- Return topmost visible widget enclosing a display-coordinate rectangle.
   --
   function Find_Widget_Enclosing_Rect
-    (Class         : String;
-     X,Y           : Natural;
-     Width, Height : Positive) return Widget_Access;
+    (Class : String;
+     X,Y   : Natural;
+     W,H   : Positive) return Widget_Access;
 
   --
   -- Update the effective view coordinates of a widget and its descendants.
@@ -2127,21 +2146,21 @@ package Agar.Widget is
   -- Rely on GL transformations instead of coordinates.
   --
   procedure Blit_Surface_GL
-    (Widget        : in Widget_not_null_Access;
-     Handle        : in Surface_Handle;
-     Width, Height : in C.C_float := 1.0)
+    (Widget : in Widget_not_null_Access;
+     Handle : in Surface_Handle;
+     W,H    : in C.C_float := 1.0)
     with Import, Convention => C, Link_Name => "AG_WidgetBlitSurfaceGL";
 
   procedure Blit_Surface_GL
-    (Widget        : in Widget_not_null_Access;
-     Surface       : in SU.Surface_not_null_Access;
-     Width, Height : in C.C_float := 1.0)
+    (Widget  : in Widget_not_null_Access;
+     Surface : in SU.Surface_not_null_Access;
+     W,H     : in C.C_float := 1.0)
     with Import, Convention => C, Link_Name => "AG_WidgetBlitGL";
 
   procedure Blit_Surface_GL_Flipped
-    (Widget        : in Widget_not_null_Access;
-     Surface       : in SU.Surface_not_null_Access;
-     Width, Height : in C.C_float := 1.0)
+    (Widget  : in Widget_not_null_Access;
+     Surface : in SU.Surface_not_null_Access;
+     W,H     : in C.C_float := 1.0)
     with Import, Convention => C, Link_Name => "AG_WidgetBlitSurfaceFlippedGL";
 
   --
@@ -2189,10 +2208,10 @@ package Agar.Widget is
   -- Called from Driver code (agDrivers must be locked).
   --
   procedure Process_Mouse_Motion
-    (Window    : in Window_not_null_Access;
-     X,Y       : in Natural;
-     Xrel,Yrel : in Integer;
-     Buttons   : in Mouse_Button);
+    (Window      : in Window_not_null_Access;
+     X,Y         : in Natural;
+     X_Rel,Y_Rel : in Integer;
+     Buttons     : in Mouse_Button);
 
   --
   -- Handle a mouse button press / release.
@@ -2228,7 +2247,7 @@ package Agar.Widget is
   ----------------
   -- Window API --
   ----------------
-     --
+
   function Window_to_Widget
     (Window : in Window_Access) return Widget_Access
     with Import, Convention => C, Link_Name => "ag_window_to_widget";
@@ -2244,10 +2263,8 @@ package Agar.Widget is
     (Caption         : in String := "";
      Name            : in String := "";
      Driver          : in Driver_Access := null;
-     Width           : in Natural := 0;
-     Height          : in Natural := 0;
-     Min_Width       : in Natural := 0;
-     Min_Height      : in Natural := 0;
+     W,H             : in Natural := 0;
+     Min_W,Min_H     : in Natural := 0;
      Alignment       : in Window_Alignment := MIDDLE_CENTER;
      Modal           : in Boolean := False;
      Maximized       : in Boolean := False;
@@ -2273,6 +2290,250 @@ package Agar.Widget is
      Fade_Out        : in Boolean := False) return Window_not_null_Access;
 
   --
+  -- Return an access to an Agar window by name.
+  -- Returns null if no such window exists.
+  -- The agDrivers vfs must be locked.
+  --
+  function Find_Window
+    (Name : in String) return Window_access;
+
+  --
+  -- Change the title text of a window.
+  --
+  procedure Set_Window_Caption
+    (Window  : in Window_not_null_Access;
+     Caption : in String);
+
+  --
+  -- Return the current title text of a window.
+  --
+  function Get_Window_Caption
+    (Window : in Window_not_null_Access) return String;
+
+  --
+  -- Set the icon of a window from the contents of the given graphics surface.
+  --
+  procedure Set_Window_Icon
+    (Window : in Window_not_null_Access;
+     Icon   : in SU.Surface_not_null_Access);
+
+  --
+  -- Set the width in pixels of the window borders and resize control bar.
+  --
+  procedure Set_Window_Borders
+    (Window       : in Window_not_null_Access;
+     W_Sides      : in Natural := 0;
+     W_Bottom     : in Natural := 8;
+     W_Resize_Bar : in Natural := 16);
+
+  --
+  -- Get the width in pixels of the window borders and resize control bar.
+  --
+  procedure Get_Window_Borders
+    (Window       : in Window_not_null_Access;
+     W_Sides      : out Natural;
+     W_Bottom     : out Natural;
+     W_Resize_Bar : out Natural);
+
+  --
+  -- Assign a standard event handler to the "window-close" event.
+  --
+  procedure Set_Window_Close_Action
+    (Window : in Window_not_null_Access;
+     Action : in Window_Close_Action);
+
+  --
+  -- Move a window by a relative distance in pixels.
+  --
+  procedure Move_Window
+    (Window : in Window_not_null_Access;
+     X_Rel  : in Integer := 0;
+     Y_Rel  : in Integer := 0);
+
+  --
+  -- Set the minimum size of a window in pixels.
+  --
+  procedure Set_Window_Minimium_Size
+    (Window : in Window_not_null_Access;
+     W      : in Natural := 0;
+     H      : in Natural := 0);
+
+  --
+  -- Set the minimum size of a window in % of available desktop area.
+  --
+  procedure Set_Window_Minimium_Size_Pct
+    (Window : in Window_not_null_Access;
+     W_Pct  : in Natural := 0;
+     H_Pct  : in Natural := 0);
+
+  --
+  -- Set the position and size of a window in pixels.
+  -- Auto-place if X/Y is -1. Auto-size if W/H is -1.
+  --
+  procedure Set_Window_Geometry
+    (Window : in Window_not_null_Access;
+     X,Y    : in Integer := -1;
+     W,H    : in Integer := -1);
+
+  --
+  -- Set the desktop alignment and size of a window (in pixels).
+  -- Auto-size if W/H is -1.
+  --
+  procedure Set_Window_Geometry_Aligned
+    (Window    : in Window_not_null_Access;
+     Alignment : in Window_Alignment := MIDDLE_CENTER;
+     W,H       : in Integer := -1);
+
+  --
+  -- Set the desktop alignment and size of a window (in % of desktop area).
+  --
+  procedure Set_Window_Geometry_Aligned_Pct
+    (Window    : in Window_not_null_Access;
+     Alignment : in Window_Alignment := MIDDLE_CENTER;
+     W_Pct     : in Positive := 50;
+     H_Pct     : in Positive := 33);
+
+  --
+  -- Compute the X,Y coordinates required to align the window in the parent
+  -- desktop area (per the window's alignment setting).
+  --
+  procedure Compute_Window_Alignment 
+    (Window : in Window_not_null_Access;
+     X,Y    : out Integer);
+
+  --
+  -- Set the opacity of a window (for compositing window managers).
+  --
+  procedure Set_Window_Opacity
+    (Window  : in Window_not_null_Access;
+     Opacity : in Window_Opacity);
+
+  --
+  -- Enable slow fade-in on a window (for compositing window managers).
+  --
+  procedure Set_Window_Fade_In
+    (Window     : in Window_not_null_Access;
+     Fade_Time  : in Window_Fade_Duration := 0.06;
+     Fade_Delta : in Window_Fade_Delta    := 0.2);
+
+  --
+  -- Enable slow fade-out on a window (for compositing window managers).
+  --
+  procedure Set_Window_Fade_Out
+    (Window     : in Window_not_null_Access;
+     Fade_Time  : in Window_Fade_Duration := 0.06;
+     Fade_Delta : in Window_Fade_Delta    := 0.2);
+
+  --
+  -- Set the zoom level on a window.
+  --
+  procedure Set_Window_Zoom
+    (Window : in Window_not_null_Access;
+     Level  : in Window_Zoom_Level := 100);
+
+  --
+  -- Save the current window geometry prior to Maximize/Minimize.
+  --
+  procedure Save_Window_Geometry
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowSaveGeometry";
+
+  --
+  -- Restore saved window geometry after a Maximize/Minimize.
+  --
+  procedure Restore_Window_Geometry
+    (Window : in Window_not_null_Access);
+
+  --
+  -- Maximize a window.
+  --
+  procedure Maximize_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowMaximize";
+
+  --
+  -- Restore a window's size prior to maximization.
+  --
+  procedure Unmaximize_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowUnmaximize";
+
+  --
+  -- Maximize a window.
+  --
+  procedure Minimize_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowMinimize";
+
+  --
+  -- Restore a window's size prior to minimization.
+  --
+  procedure Unminimize_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowUnminimize";
+
+  --
+  -- Make a window a logical child of the specified window. It will
+  -- be detached automatically when the parent window is detached.
+  --
+  procedure Attach_Window
+    (Parent, Child : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowAttach";
+
+  --
+  -- Detach a window from its logical parent. Reverse the effect of
+  -- a previous Attach_Window() call.
+  --
+  procedure Detach_Window
+    (Parent, Child : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowDetach";
+
+  --
+  -- Make a window a transient window for another window. The effect
+  -- of this setting is dependent on the window manager.
+  --
+  procedure Make_Window_Transient
+    (Parent, Child : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowMakeTransient";
+
+  --
+  -- Pin a window against another such that the pinned window will be
+  -- moved along whenever its parent window is moved.
+  --
+  procedure Pin_Window
+    (Parent, Child : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowPin";
+
+  --
+  -- Detach a pinned window from its parent.
+  --
+  procedure Unpin_Window
+    (Child : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowUnpin";
+
+  --
+  -- Move any pinned windows by a relative displacement in pixels.
+  -- Intended to be called from low-level Driver code.
+  --
+  procedure Move_Pinned_Windows
+    (Parent      : in Window_not_null_Access;
+     X_Rel,Y_Rel : in Integer);
+
+  --
+  -- Lower the Z-order of a window.
+  --
+  procedure Lower_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowLower";
+
+  --
+  -- Raise the Z-order of a window.
+  --
+  procedure Raise_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowRaise";
+     
+  --
   -- Make an Agar window visible.
   -- 
   procedure Show_Window
@@ -2287,18 +2548,254 @@ package Agar.Widget is
     with Import, Convention => C, Link_Name => "AG_WindowHide";
 
   --
-  -- Return an access to an Agar window by name.
-  -- Returns null if no such window exists.
-  -- The agDrivers vfs must be locked.
+  -- Render all windows that need to be redrawn. Intended to be called by
+  -- the main event loop once all events have been processed.
+  -- 
+  procedure Draw_Queued_Windows
+    with Import, Convention => C, Link_Name => "AG_WindowDrawQueued";
+
   --
-  function Find_Window
-    (Name : in String) return Window_access;
+  -- Return an access to the currently focused window (or null).
+  -- The caller should use Lock_Drivers().
+  --
+  function Find_Focused_Window return Window_Access
+    with Import, Convention => C, Link_Name => "AG_WindowFindFocused";
+
+  --
+  -- Return an access to the currently focused window (or null).
+  -- The caller should use Lock_Drivers().
+  --
+  function Is_Window_Focused
+    (Window : in Window_not_null_Access) return Boolean;
+
+  --
+  -- Set the input focus on the given window.
+  --
+  procedure Focus_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowFocus";
+
+  --
+  -- Set the input focus on the given window (by name).
+  --
+  procedure Focus_Window
+    (Name : in String);
+
+  --
+  -- Set the input focus on the given window (by display coordinates).
+  -- This operation is specific to single-window drivers.
+  --
+  procedure Focus_Window
+    (Driver : in Driver_SW_not_null_Access;
+     X,Y    : in Integer);
+
+  --
+  -- Move the input focus to the next Agar widget in the window.
+  --
+  procedure Cycle_Window_Focus
+    (Window        : in Window_not_null_Access;
+     Reverse_Order : in Boolean := False);
+
+  --
+  -- Generic event handler which detaches / destroys the window.
+  --
+  procedure Window_Detach_Event_Handler 
+    (Event : in EV.Event_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowDetachGenEv";
+
+  --
+  -- Generic event handler which hides the window.
+  --
+  procedure Window_Hide_Event_Handler 
+    (Event : in EV.Event_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowHideGenEv";
+
+  --
+  -- Generic event handler which raises a "window-close" event.
+  --
+  procedure Window_Close_Event_Handler 
+    (Event : in EV.Event_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowCloseGenEv";
+
+  --
+  -- Close the currently focused window (if any).
+  --
+  procedure Closed_Focused_Window
+    with Import, Convention => C, Link_Name => "AG_CloseFocusedWindow";
+
+  --
+  -- Commit any pending change of focus between windows.
+  -- Intended to be called from low-level Driver code.
+  -- The caller should use Lock_Drivers().
+  --
+  procedure Process_Window_Focus_Change
+    with Import, Convention => C, Link_Name => "AG_WindowProcessFocusChange";
+
+  --
+  -- Commit any pending window visibility changes to visible.
+  -- Raises the "widget-shown" event on all widgets.
+  -- Intended to be called from low-level Driver code.
+  -- The caller should use Lock_Drivers().
+  --
+  procedure Process_Window_Show_Queue
+    with Import, Convention => C, Link_Name => "AG_WindowProcessShowQueue";
+
+  --
+  -- Commit any pending window visibility changes to invisible.
+  -- Raises the "widget-hidden" event on all widgets.
+  -- Intended to be called from low-level Driver code.
+  -- The caller should use Lock_Drivers().
+  --
+  procedure Process_Window_Hide_Queue
+    with Import, Convention => C, Link_Name => "AG_WindowProcessHideQueue";
+
+  --
+  -- Perform garbage collection on Windows and Widgets.
+  -- Raises the "detached" event on windows (and any attached Widgets).
+  -- Frees all memory allocated by Window and Widget instances.
+  -- Intended to be called from low-level Driver code.
+  -- The caller should use Lock_Drivers().
+  --
+  procedure Process_Window_Detach_Queue
+    with Import, Convention => C, Link_Name => "AG_WindowProcessDetachQueue";
+
+  --
+  -- Configure a new cursor-change area over Rect with a custom Cursor.
+  -- The given Cursor will be freed automatically on window detach.
+  --
+  function Map_Cursor
+    (Widget : in Widget_not_null_Access;
+     Rect   : in SU.Rect_Access;
+     Cursor : in Cursor_not_null_Access) return Cursor_Area_not_null_Access
+    with Import, Convention => C, Link_Name => "AG_MapCursor";
+
+  --
+  -- Configure a new cursor-change area over Rect with a standard Agar cursor.
+  --
+  function Map_Cursor
+    (Widget : in Widget_not_null_Access;
+     Rect   : in SU.Rect_Access;
+     Cursor : in Standard_Cursor) return Cursor_Area_not_null_Access;
+
+  --
+  -- Delete a cursor-change area.
+  --
+  procedure Unmap_Cursor
+    (Widget      : in Widget_not_null_Access;
+     Cursor_Area : in Cursor_Area_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_UnmapCursor";
+
+  --
+  -- Delete all of the cursor-change areas of a given widget.
+  --
+  procedure Unmap_All_Cursors
+    (Window : in Window_not_null_Access;
+     Widget : in Cursor_Area_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_UnmapAllCursors";
+
+  --
+  -- Render a window to the display.
+  -- Must be called from low-level Driver code only.
+  -- Calls must be enclosed between Begin_Window_Rendering and End_Window_Rendering
+  --
+  procedure Draw_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowDraw";
+
+  --
+  -- Update the effective coordinates and geometries of all widgets attached to
+  -- the window. User code that either perform direct Agar.Object.Attach() or
+  -- Detach() calls on Widget VFS, or makes direct modifications to the x,y,w,h
+  -- field of the Widget structure should call this procedure.
+  --
+  procedure Update_Window
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowUpdate";
+
+  --
+  -- Return the visibility status of a window.
+  --
+  function Window_Is_Visible
+    (Window : in Window_not_null_Access) return Boolean;
+
+  --
+  -- Return an access to the parent window of a widget (or fatal error if null).
+  -- The Drivers and Window object must be locked.
+  --
+  function Parent_Window
+    (Widget : in Widget_not_null_Access) return Window_not_null_Access;
+
+  --
+  -- Set an explicit child widget position in pixels.
+  --
+  procedure Set_Widget_Position
+    (Widget : in Widget_not_null_Access;
+     X,Y    : in Integer := 0);
+
+  --
+  -- Set an explicit child widget size in pixels.
+  --
+  procedure Set_Widget_Size
+    (Widget : in Widget_not_null_Access;
+     W,H    : in Natural);
+
+  --
+  -- Set an explicit child widget position and size in pixels.
+  --
+  procedure Set_Widget_Geometry
+    (Widget : in Widget_not_null_Access;
+     X,Y    : in Integer := 0;
+     W,H    : in Natural);
+
+  --
+  -- Set an explicit child widget position and size from a given AG_Rect.
+  --
+  procedure Set_Widget_Geometry
+    (Widget : in Widget_not_null_Access;
+     Rect   : in SU.Rect_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WidgetSetGeometry";
+
+  --
+  -- Set the window size to the largest size that will fill the parent desktop.
+  --
+  procedure Set_Window_Geometry_Max
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowSetGeometryMax";
+
+  --
+  -- Request a video update over the area of the given widget.
+  --
+  procedure Redraw
+    (Widget : in Widget_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_Redraw";
+
+  --
+  -- Request a video update of an entire window.
+  --
+  procedure Redraw
+    (Window : in Window_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_Redraw";
+
+  --
+  -- Process window focus changes, visibility changes and perform garbage collection.
+  -- Intended to be called from the event loop once all events have been processed.
+  --
+  procedure Process_Queued_Windows
+    with Import, Convention => C, Link_Name => "AG_WindowProcessQueued";
+
+
+  --
+  -- Return the generic "Agar Settings" dialog window.
+  --
+  function Agar_Settings_Window return Window_not_null_Access
+    with Import, Convention => C, Link_Name => "AG_SettingsWindow";
 
   private
 
   ------------------
   -- gui/widget.c --
   ------------------
+
   function AG_WidgetSetFocusable
     (Widget : in Widget_not_null_Access;
      Enable : in C.int) return C.int
@@ -2314,10 +2811,9 @@ package Agar.Widget is
     with Import, Convention => C, Link_Name => "AG_WidgetFindPoint";
   
   function AG_WidgetFindRect
-    (Class  : in CS.chars_ptr;
-     X,Y    : in C.int;
-     Width  : in C.int;
-     Height : in C.int) return Widget_Access
+    (Class : in CS.chars_ptr;
+     X,Y   : in C.int;
+     W,H   : in C.int) return Widget_Access
     with Import, Convention => C, Link_Name => "AG_WidgetFindRect";
   
   procedure AG_WidgetUpdateCoords
@@ -2334,9 +2830,9 @@ package Agar.Widget is
     with Import, Convention => C, Link_Name => "ag_widget_blit_from";
   
   procedure AG_WidgetBlit
-    (Widget   : in Widget_not_null_Access;
-     Surface  : in SU.Surface_not_null_Access;
-     X,Y      : in C.int)
+    (Widget  : in Widget_not_null_Access;
+     Surface : in SU.Surface_not_null_Access;
+     X,Y     : in C.int)
     with Import, Convention => C, Link_Name => "ag_widget_blit";
 
   function AG_WidgetSensitive
@@ -2350,22 +2846,22 @@ package Agar.Widget is
     with Import, Convention => C, Link_Name => "AG_MouseCursorUpdate";
   
   procedure AG_ProcessMouseMotion
-    (Window    : Window_not_null_Access;
-     X,Y       : C.int;
-     Xrel,Yrel : C.int;
-     Buttons   : Mouse_Button)
+    (Window      : Window_not_null_Access;
+     X,Y         : C.int;
+     X_Rel,Y_Rel : C.int;
+     Buttons     : Mouse_Button)
     with Import, Convention => C, Link_Name => "AG_ProcessMouseMotion";
 
   procedure AG_ProcessMouseButtonUp
-    (Window    : Window_not_null_Access;
-     X,Y       : C.int;
-     Button    : Mouse_Button)
+    (Window : Window_not_null_Access;
+     X,Y    : C.int;
+     Button : Mouse_Button)
     with Import, Convention => C, Link_Name => "AG_ProcessMouseButtonUp";
 
   procedure AG_ProcessMouseButtonDown
-    (Window    : Window_not_null_Access;
-     X,Y       : C.int;
-     Button    : Mouse_Button)
+    (Window : Window_not_null_Access;
+     X,Y    : C.int;
+     Button : Mouse_Button)
     with Import, Convention => C, Link_Name => "AG_ProcessMouseButtonDown";
 
   --------------------
@@ -2400,8 +2896,8 @@ package Agar.Widget is
     with Import, Convention => C, Link_Name => "AG_WindowNewUnder";
 
   function AG_WindowNewNamedS
-    (Flags  : in C.unsigned;
-     Name   : in CS.chars_ptr) return Window_Access
+    (Flags : in C.unsigned;
+     Name  : in CS.chars_ptr) return Window_Access
     with Import, Convention => C, Link_Name => "AG_WindowNewNamedS";
 
   function AG_WindowFind
@@ -2429,17 +2925,142 @@ package Agar.Widget is
     (Window : in Window_not_null_Access)
     with Import, Convention => C, Link_Name => "AG_WindowMinimize";
 
+  procedure AG_WindowSetGeometry
+    (Window : in Window_not_null_Access;
+     X,Y    : in C.int;
+     W,H    : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetGeometry";
+
   procedure AG_WindowSetGeometryAligned
     (Window    : in Window_not_null_Access;
      Alignment : in C.int;
-     Width     : in C.int;
-     Height    : in C.int)
+     W,H       : in C.int)
     with Import, Convention => C, Link_Name => "AG_WindowSetGeometryAligned";
 
+  procedure AG_WindowSetGeometryAlignedPct
+    (Window      : in Window_not_null_Access;
+     Alignment   : in C.int;
+     W_Pct,H_Pct : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetGeometryAlignedPct";
+
+  procedure AG_WindowComputeAlignment
+    (Window : in Window_not_null_Access;
+     SA     : in SizeAlloc_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowComputeAlignment";
+
+  procedure AG_WindowSetOpacity
+    (Window  : in Window_not_null_Access;
+     Opacity : in C.C_float)
+    with Import, Convention => C, Link_Name => "AG_WindowSetOpacity";
+
+  procedure AG_WindowSetFadeIn
+    (Window     : in Window_not_null_Access;
+     Fade_Time  : in C.C_float;
+     Fade_Delta : in C.C_float)
+    with Import, Convention => C, Link_Name => "AG_WindowSetFadeIn";
+
+  procedure AG_WindowSetFadeOut
+    (Window     : in Window_not_null_Access;
+     Fade_Time  : in C.C_float;
+     Fade_Delta : in C.C_float)
+    with Import, Convention => C, Link_Name => "AG_WindowSetFadeOut";
+
+  procedure AG_WindowSetZoom
+    (Window : in Window_not_null_Access;
+     Level  : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetZoom";
+
+  function AG_WindowRestoreGeometry
+    (Window : in Window_not_null_Access) return C.int
+    with Import, Convention => C, Link_Name => "AG_WindowRestoreGeometry";
+
+  procedure AG_WindowSetIcon
+    (Window : in Window_not_null_Access;
+     Icon   : in SU.Surface_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WindowSetIcon";
+
+  procedure AG_WindowSetSideBorders
+    (Window : in Window_not_null_Access;
+     W      : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetSideBorders";
+
+  procedure AG_WindowSetBottomBorder
+    (Window : in Window_not_null_Access;
+     W      : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetBottomBorder";
+
+  procedure AG_WindowSetCloseAction
+    (Window  : in Window_not_null_Access;
+     Action  : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetCloseAction";
+
+  procedure AG_WindowMove
+    (Window : in Window_not_null_Access;
+     X_Rel  : in C.int;
+     Y_Rel  : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowMove";
+
   procedure AG_WindowSetMinSize
-    (Window    : in Window_not_null_Access;
-     Width     : in C.int;
-     Height    : in C.int)
+    (Window : in Window_not_null_Access;
+     W,H    : in C.int)
     with Import, Convention => C, Link_Name => "AG_WindowSetMinSize";
+
+  procedure AG_WindowSetMinSizePct
+    (Window : in Window_not_null_Access;
+     W_Pct  : in C.int;
+     H_Pct  : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowSetMinSizePct";
+
+  procedure AG_WindowMovePinned
+    (Window : in Window_not_null_Access;
+     X_Rel  : in C.int;
+     Y_Rel  : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowMovePinned";
+
+  function AG_WindowIsFocused
+    (Window : in Window_not_null_Access) return C.int
+    with Import, Convention => C, Link_Name => "AG_WindowIsFocused";
+
+  function AG_WindowFocusNamed
+    (Name : in CS.chars_ptr) return C.int
+    with Import, Convention => C, Link_Name => "AG_WindowFocusNamed";
+
+  function AG_WindowFocusAtPos
+    (Driver : in Driver_SW_not_null_Access;
+     X,Y    : in C.int) return C.int
+    with Import, Convention => C, Link_Name => "AG_WindowFocusAtPos";
+
+  procedure AG_WindowCycleFocus
+    (Window        : in Window_not_null_Access;
+     Reverse_Order : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WindowCycleFocus";
+
+  function AG_MapStockCursor
+    (Widget : in Widget_not_null_Access;
+     Rect   : in SU.Rect_not_null_Access;
+     Cursor : in C.int) return Cursor_area_Access
+    with Import, Convention => C, Link_Name => "AG_MapStockCursor";
+
+  procedure AG_WidgetSetPosition
+    (Widget : in Widget_not_null_Access;
+     X,Y    : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WidgetSetPosition";
+
+  procedure AG_WidgetSetSize
+    (Widget : in Widget_not_null_Access;
+     W,H    : in C.int)
+    with Import, Convention => C, Link_Name => "AG_WidgetSetSize";
+
+  procedure AG_WidgetSetGeometry
+    (Widget : in Widget_not_null_Access;
+     Rect   : in SU.Rect_not_null_Access)
+    with Import, Convention => C, Link_Name => "AG_WidgetSetGeometry";
+
+  -----------------
+  -- ag_widget.c --
+  -----------------
+  function ag_window_get_caption
+    (Window : in Window_not_null_Access) return CS.chars_ptr
+    with Import, Convention => C, Link_Name => "ag_window_get_caption";
 
 end Agar.Widget;

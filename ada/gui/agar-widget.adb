@@ -90,9 +90,9 @@ package body Agar.Widget is
   -- Return topmost visible widget intersecting a display-coordinate rectangle.
   --
   function Find_Widget_Enclosing_Rect
-    (Class         : String;
-     X,Y           : Natural;
-     Width, Height : Positive) return Widget_Access
+    (Class : String;
+     X,Y   : Natural;
+     W,H   : Positive) return Widget_Access
   is
     Ch_Class : aliased C.char_array := C.To_C(Class);
   begin
@@ -100,8 +100,8 @@ package body Agar.Widget is
       (Class  => CS.To_Chars_Ptr(Ch_Class'Unchecked_Access),
        X      => C.int(X),
        Y      => C.int(Y),
-       Width  => C.int(Width),
-       Height => C.int(Height));
+       W      => C.int(W),
+       H      => C.int(H));
   end;
   
   --
@@ -222,17 +222,17 @@ package body Agar.Widget is
   -- Handle a mouse motion. Called from Driver code (agDrivers must be locked).
   --
   procedure Process_Mouse_Motion
-    (Window    : in Window_not_null_Access;
-     X,Y       : in Natural;
-     Xrel,Yrel : in Integer;
-     Buttons   : in Mouse_Button) is
+    (Window      : in Window_not_null_Access;
+     X,Y         : in Natural;
+     X_Rel,Y_Rel : in Integer;
+     Buttons     : in Mouse_Button) is
   begin
     AG_ProcessMouseMotion
       (Window  => Window,
        X       => C.int(X),
        Y       => C.int(Y),
-       Xrel    => C.int(Xrel),
-       Yrel    => C.int(Yrel),
+       X_Rel   => C.int(X_Rel),
+       Y_Rel   => C.int(Y_Rel),
        Buttons => Buttons);
   end;
 
@@ -315,10 +315,8 @@ package body Agar.Widget is
     (Caption         : in String := "";
      Name            : in String := "";
      Driver          : in Driver_Access := null;
-     Width           : in Natural := 0;
-     Height          : in Natural := 0;
-     Min_Width       : in Natural := 0;
-     Min_Height      : in Natural := 0;
+     W,H             : in Natural := 0;
+     Min_W,Min_H     : in Natural := 0;
      Alignment       : in Window_Alignment := MIDDLE_CENTER;
      Modal           : in Boolean := False;
      Maximized       : in Boolean := False;
@@ -387,7 +385,9 @@ package body Agar.Widget is
       end if;
     end if;
 
-    pragma Assert (Win /= null);
+    if (Win = null) then
+      raise Program_Error with Agar.Error.Get_Error;
+    end if;
 
     if (Caption /= "") then
       AG_WindowSetCaptionS
@@ -395,19 +395,19 @@ package body Agar.Widget is
          Caption => CS.To_Chars_Ptr(Ch_Caption'Unchecked_Access));
     end if;
 
-    if (Width /= 0 or Height /= 0) then
+    if (W /= 0 or H /= 0) then
       AG_WindowSetGeometryAligned
         (Window    => Win,
          Alignment => C.int(Alignment'Enum_Rep),
-         Width     => C.int(Width),
-         Height    => C.int(Height));
+         W         => C.int(W),
+         H         => C.int(H));
     end if;
 
-    if (Min_Width /= 0 or Min_Height /= 0) then
+    if (Min_W /= 0 or Min_H /= 0) then
       AG_WindowSetMinSize
-        (Window  => Win,
-         Width   => C.int(Min_Width),
-         Height  => C.int(Min_Height));
+        (Window => Win,
+         W      => C.int(Min_W),
+         H      => C.int(Min_H));
     end if;
 
     if (Maximized) then
@@ -423,7 +423,7 @@ package body Agar.Widget is
   --
   -- Return an access to an Agar window by name.
   -- Returns null if no such window exists.
-  -- The agDrivers vfs must be locked.
+  -- Lock_Drivers() and Unlock_Drivers() should be used.
   --
   function Find_Window
     (Name : in String) return Window_access
@@ -431,6 +431,419 @@ package body Agar.Widget is
     Ch_Name : aliased C.char_array := C.To_C(Name);
   begin
     return AG_WindowFind(CS.To_Chars_Ptr(Ch_Name'Unchecked_Access));
+  end;
+
+  --
+  -- Change the title text of a window.
+  --
+  procedure Set_Window_Caption
+    (Window  : in Window_not_null_Access;
+     Caption : in String)
+  is
+    Ch_Caption : aliased C.char_array := C.To_C(Caption);
+  begin
+    AG_WindowSetCaptionS
+      (Window  => Window,
+       Caption => CS.To_Chars_Ptr(Ch_Caption'Unchecked_Access));
+  end;
+
+  --
+  -- Return the current title text of a window.
+  --
+  function Get_Window_Caption
+    (Window : in Window_not_null_Access) return String
+  is
+  begin
+    return C.To_Ada( CS.Value(ag_window_get_caption(Window)) );
+  end;
+
+  --
+  -- Set the icon of a window from the contents of the given graphics surface.
+  --
+  procedure Set_Window_Icon
+    (Window  : in Window_not_null_Access;
+     Icon    : in SU.Surface_not_null_Access)
+  is begin
+    AG_WindowSetIcon
+      (Window  => Window,
+       Icon    => Icon);
+  end;
+
+  --
+  -- Set the width in pixels of the window borders and resize control bar.
+  --
+  procedure Set_Window_Borders
+    (Window       : in Window_not_null_Access;
+     W_Sides      : in Natural := 0;
+     W_Bottom     : in Natural := 8;
+     W_Resize_Bar : in Natural := 16)
+  is
+  begin
+    AG_WindowSetSideBorders
+      (Window => Window,
+       W      => C.int(W_Sides));
+    AG_WindowSetBottomBorder
+      (Window => Window,
+       W      => C.int(W_Bottom));
+
+    Window.Resize_Control_W := C.int(W_Resize_Bar);
+  end;
+
+  --
+  -- Get the width in pixels of the window borders and resize control bar.
+  --
+  procedure Get_Window_Borders
+    (Window       : in Window_not_null_Access;
+     W_Sides      : out Natural;
+     W_Bottom     : out Natural;
+     W_Resize_Bar : out Natural)
+  is begin
+    W_Bottom     := Natural(Window.Bottom_Border_W);
+    W_Sides      := Natural(Window.Side_Borders_W);
+    W_Resize_Bar := Natural(Window.Resize_Control_W);
+  end;
+
+  --
+  -- Assign a standard event handler to the "window-close" event.
+  --
+  procedure Set_Window_Close_Action
+    (Window : in Window_not_null_Access;
+     Action : in Window_Close_Action)
+  is begin
+    AG_WindowSetCloseAction
+      (Window => Window,
+       Action => Action'Enum_Rep);
+  end;
+
+  --
+  -- Move a window by a relative distance in pixels.
+  --
+  procedure Move_Window
+    (Window : in Window_not_null_Access;
+     X_Rel  : in Integer := 0;
+     Y_Rel  : in Integer := 0)
+  is begin
+    AG_WindowMove
+      (Window => Window,
+       X_Rel   => C.int(X_Rel),
+       Y_Rel   => C.int(Y_Rel));
+  end;
+
+  --
+  -- Set the minimum size of a window in pixels.
+  --
+  procedure Set_Window_Minimium_Size
+    (Window : in Window_not_null_Access;
+     W      : in Natural := 0;
+     H      : in Natural := 0)
+  is begin
+    AG_WindowSetMinSize
+      (Window => Window,
+       W      => C.int(W),
+       H      => C.int(H));
+  end;
+
+  --
+  -- Set the minimum size of a window in % of available desktop area.
+  --
+  procedure Set_Window_Minimium_Size_Pct
+    (Window : in Window_not_null_Access;
+     W_Pct  : in Natural := 0;
+     H_Pct  : in Natural := 0)
+  is begin
+    AG_WindowSetMinSizePct
+      (Window => Window,
+       W_Pct  => C.int(W_Pct),
+       H_Pct  => C.int(H_Pct));
+  end;
+
+  --
+  -- Set the position and size of a window in pixels.
+  -- Auto-place if X/Y is -1. Auto-size if W/H is -1.
+  --
+  procedure Set_Window_Geometry
+    (Window : in Window_not_null_Access;
+     X,Y    : in Integer := -1;
+     W,H    : in Integer := -1)
+  is begin
+    AG_WindowSetGeometry
+      (Window => Window,
+       X      => C.int(X),
+       Y      => C.int(Y),
+       W      => C.int(W),
+       H      => C.int(H));
+  end;
+
+  --
+  -- Set the desktop alignment and size of a window (in pixels).
+  -- Auto-size if W/H is -1.
+  --
+  procedure Set_Window_Geometry_Aligned
+    (Window    : in Window_not_null_Access;
+     Alignment : in Window_Alignment := MIDDLE_CENTER;
+     W,H       : in Integer := -1)
+  is begin
+    AG_WindowSetGeometryAligned
+      (Window    => Window,
+       Alignment => Alignment'Enum_Rep,
+       W         => C.int(W),
+       H         => C.int(H));
+  end;
+
+  --
+  -- Set the desktop alignment and size of a window (in % of desktop area).
+  --
+  procedure Set_Window_Geometry_Aligned_Pct
+    (Window    : in Window_not_null_Access;
+     Alignment : in Window_Alignment := MIDDLE_CENTER;
+     W_Pct     : in Positive := 50;
+     H_Pct     : in Positive := 33)
+  is begin
+    AG_WindowSetGeometryAlignedPct
+      (Window    => Window,
+       Alignment => Alignment'Enum_Rep,
+       W_Pct     => C.int(W_Pct),
+       H_Pct     => C.int(H_Pct));
+  end;
+
+  --
+  -- Compute the X,Y coordinates required to align the window in the parent
+  -- desktop area (per the window's alignment setting).
+  --
+  procedure Compute_Window_Alignment 
+    (Window : in Window_not_null_Access;
+     X,Y    : out Integer)
+  is
+     SA : aliased SizeAlloc;
+  begin
+     AG_WindowComputeAlignment
+       (Window => Window,
+        SA     => SA'Unchecked_Access);
+     X := Integer(SA.x);
+     Y := Integer(SA.y);
+  end;
+
+  --
+  -- Set the opacity of a window (for compositing window managers).
+  --
+  procedure Set_Window_Opacity
+    (Window  : in Window_not_null_Access;
+     Opacity : in Window_Opacity)
+  is begin
+    AG_WindowSetOpacity
+      (Window  => Window,
+       Opacity => C.C_float(Opacity));
+  end;
+
+  --
+  -- Enable slow fade-in on a window (for compositing window managers).
+  --
+  procedure Set_Window_Fade_In
+    (Window     : in Window_not_null_Access;
+     Fade_Time  : in Window_Fade_Duration := 0.06;
+     Fade_Delta : in Window_Fade_Delta    := 0.2)
+  is begin
+    AG_WindowSetFadeIn
+      (Window     => Window,
+       Fade_Time  => C.C_float(Fade_Time),
+       Fade_Delta => C.C_float(Fade_Delta));
+  end;
+
+  --
+  -- Enable slow fade-out on a window (for compositing window managers).
+  --
+  procedure Set_Window_Fade_Out
+    (Window     : in Window_not_null_Access;
+     Fade_Time  : in Window_Fade_Duration := 0.06;
+     Fade_Delta : in Window_Fade_Delta    := 0.2)
+  is begin
+    AG_WindowSetFadeOut
+      (Window     => Window,
+       Fade_Time  => C.C_float(Fade_Time),
+       Fade_Delta => C.C_float(Fade_Delta));
+  end;
+
+  --
+  -- Set the zoom level on a window.
+  --
+  procedure Set_Window_Zoom
+    (Window : in Window_not_null_Access;
+     Level  : in Window_Zoom_Level := 100)
+  is begin
+    AG_WindowSetZoom
+      (Window => Window,
+       Level  => C.int(Level));
+  end;
+
+  --
+  -- Restore saved window geometry after a Maximize/Minimize.
+  --
+  procedure Restore_Window_Geometry
+    (Window : in Window_not_null_Access)
+  is
+    Ret_Ignore : aliased C.int;
+  begin
+    Ret_Ignore := AG_WindowRestoreGeometry(Window);
+  end;
+
+  --
+  -- Move any pinned windows by a relative displacement in pixels.
+  -- Intended to be called from low-level Driver code.
+  --
+  procedure Move_Pinned_Windows
+    (Parent      : in Window_not_null_Access;
+     X_Rel,Y_Rel : in Integer)
+  is begin
+    AG_WindowMovePinned
+      (window => Parent,
+       X_Rel  => C.int(X_Rel),
+       Y_Rel  => C.int(Y_Rel));
+  end;
+
+  --
+  -- Return an access to the currently focused window (or null).
+  -- The caller should use Lock_Drivers().
+  --
+  function Is_Window_Focused
+    (Window : Window_not_null_Access) return Boolean
+  is begin
+    return 1 = AG_WindowIsFocused(Window);
+  end;
+
+  --
+  -- Set the input focus on the given window (by name).
+  --
+  procedure Focus_Window
+    (Name : in String)
+  is
+    Ch_Name : aliased C.char_array := C.To_C(Name);
+    Ret_Val : aliased C.int;
+  begin
+    Ret_Val := AG_WindowFocusNamed
+      (Name => CS.To_Chars_Ptr(Ch_Name'Unchecked_Access));
+  end;
+
+  --
+  -- Set the input focus on the given window (by display coordinates).
+  -- This operation is specific to single-window drivers.
+  --
+  procedure Focus_Window
+    (Driver : in Driver_SW_not_null_Access;
+     X,Y    : in Integer)
+  is
+    Ret_Val : aliased C.int;
+  begin 
+    Ret_Val := AG_WindowFocusAtPos
+      (Driver => Driver,
+       X      => C.int(X),
+       Y      => C.int(Y));
+  end;
+
+  --
+  -- Move the input focus to the next Agar widget in the window.
+  --
+  procedure Cycle_Window_Focus
+    (Window        : in Window_not_null_Access;
+     Reverse_Order : in Boolean := False)
+  is begin
+    if (Reverse_Order) then
+      AG_WindowCycleFocus
+        (Window        => Window,
+         Reverse_Order => C.int(1));
+    else
+      AG_WindowCycleFocus
+        (Window        => Window,
+         Reverse_Order => C.int(0));
+    end if;
+  end;
+
+  --
+  -- Configure a new cursor-change area over Rect with a standard Agar cursor.
+  --
+  function Map_Cursor
+    (Widget : in Widget_not_null_Access;
+     Rect   : in SU.Rect_Access;
+     Cursor : in Standard_Cursor) return Cursor_Area_not_null_Access
+  is
+    Cursor_Area : Cursor_Area_Access;
+  begin
+    Cursor_Area := AG_MapStockCursor
+      (Widget => Widget,
+       Rect   => Rect,
+       Cursor => Cursor'Enum_Rep);
+    if (Cursor_Area = null) then 
+      raise Program_Error with Agar.Error.Get_Error;
+    else
+      return Cursor_Area;
+    end if;
+  end;
+
+  --
+  -- Return the visibility status of a window.
+  --
+  function Window_Is_Visible
+    (Window : in Window_not_null_Access) return Boolean
+  is begin
+    return (Window.Visible = C.int(1));
+  end;
+
+  --
+  -- Return an access to the parent window of a widget (or fatal error if null).
+  -- The Drivers and Window object must be locked.
+  --
+  function Parent_Window
+    (Widget : in Widget_not_null_Access) return Window_not_null_Access
+  is begin
+    if (Widget.Parent_Window /= null) then
+      return Widget.Parent_Window;
+    else
+      raise Program_Error with "No parent window";
+    end if;
+  end;
+
+  --
+  -- Set an explicit child widget position in pixels.
+  --
+  procedure Set_Widget_Position
+    (Widget : in Widget_not_null_Access;
+     X,Y    : in Integer := 0)
+  is begin
+    AG_WidgetSetPosition
+      (Widget => Widget,
+       X      => C.int(X),
+       Y      => C.int(Y));
+  end;
+
+  --
+  -- Set an explicit child widget size in pixels.
+  --
+  procedure Set_Widget_Size
+    (Widget : in Widget_not_null_Access;
+     W,H    : in Natural)
+  is begin
+    AG_WidgetSetSize
+      (Widget => Widget,
+       W      => C.int(W),
+       H      => C.int(H));
+  end;
+
+  --
+  -- Set an explicit child widget position and size in pixels.
+  --
+  procedure Set_Widget_Geometry
+    (Widget : in Widget_not_null_Access;
+     X,Y    : in Integer := 0;
+     W,H    : in Natural)
+  is
+    Rect : aliased SU.AG_Rect;
+  begin
+    Rect.X := C.int(X);
+    Rect.Y := C.int(Y);
+    Rect.W := C.int(W);
+    Rect.X := C.int(H);
+    AG_WidgetSetGeometry
+      (Widget => Widget,
+       Rect   => Rect'Unchecked_Access);
   end;
 
 end Agar.Widget;
