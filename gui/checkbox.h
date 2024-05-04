@@ -57,12 +57,16 @@ AG_Checkbox *_Nonnull AG_CheckboxNewFlag(void *_Nullable, Uint, const char *_Nul
                                          Uint *_Nonnull, Uint);
 
 AG_Checkbox *_Nonnull AG_CheckboxNew(void *_Nullable, Uint, const char *_Nullable, ...)
-                                    FORMAT_ATTRIBUTE(printf,3,4);
+                                     FORMAT_ATTRIBUTE(printf,3,4);
 AG_Checkbox *_Nonnull AG_CheckboxNewS(void *_Nullable, Uint, const char *_Nullable);
 
 int  AG_CheckboxGetState(AG_Checkbox *_Nonnull) _Pure_Attribute;
 void AG_CheckboxSetState(AG_Checkbox *_Nonnull, int);
 void AG_CheckboxToggle(AG_Checkbox *_Nonnull);
+
+void AG_CheckboxText(AG_Checkbox *_Nonnull, const char *_Nullable, ...)
+                     FORMAT_ATTRIBUTE(printf,2,3);
+void AG_CheckboxTextS(AG_Checkbox *_Nonnull, const char *_Nullable);
 __END_DECLS
 
 #include <agar/gui/close.h>

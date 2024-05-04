@@ -1,4 +1,4 @@
-.\" Copyright (c) 2002-2022 Julien Nadeau Carriere <vedge@csoft.net>
+.\" Copyright (c) 2002-2024 Julien Nadeau Carriere <vedge@csoft.net>
 .\" All rights reserved.
 .\"
 .\" Redistribution and use in source and binary forms, with or without
@@ -80,6 +80,12 @@ If a text label is specified, it is displayed next to the control.
 .Ft "void"
 .Fn AG_CheckboxToggle "AG_Checkbox *checkbox"
 .Pp
+.Ft void
+.Fn AG_CheckboxText "AG_Checkbox *checkbox" "const char *format" "..."
+.Pp
+.Ft void
+.Fn AG_CheckboxTextS "AG_Checkbox *checkbox" "const char *label"
+.Pp
 .nr nS 0
 The
 .Fn AG_CheckboxNew
@@ -153,6 +159,9 @@ returns the current state of the checkbox.
 sets the of the checkbox, where 0=inactive and 0=active.
 .Fn AG_CheckboxToggle
 inverts the state atomically.
+.Pp
+.Fn AG_ButtonText
+sets the label of the checkbox from the specified text string.
 .Sh BINDINGS
 The
 .Nm
@@ -270,3 +279,7 @@ widget first appeared in Agar 1.0.
 and
 .Fn AG_CheckboxSetState
 appeared in Agar 1.6.0.
+.Fn AG_CheckboxText
+and
+.Fn AG_CheckboxTextS
+appeared in Agar 1.7.1.

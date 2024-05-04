@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002-2023 Julien Nadeau Carriere <vedge@csoft.net>
+ * Copyright (c) 2002-2024 Julien Nadeau Carriere <vedge@csoft.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -637,6 +637,42 @@ Ctrl(void *obj, void *inputDevice, const AG_DriverEvent *dev)
 	if (dev->type == AG_DRIVER_CTRL_BUTTON_DOWN &&
 	    dev->ctrlButton.which == AG_CTRL_BUTTON_A)
 		AG_CheckboxToggle(cb);
+}
+
+/* Set the label text (format string). */
+void
+AG_CheckboxText(AG_Checkbox *cb, const char *fmt, ...)
+{
+	char *s;
+	va_list ap;
+
+	va_start(ap, fmt);
+	Vasprintf(&s, fmt, ap);
+	va_end(ap);
+
+	AG_CheckboxTextS(cb, s);
+
+	free(s);
+}
+
+/* Set the label text (C string). */
+void
+AG_CheckboxTextS(AG_Checkbox *cb, const char *label)
+{
+	char *labelDup = TryStrdup(label);
+
+	AG_OBJECT_ISA(cb, "AG_Widget:AG_Checkbox:*");
+	AG_ObjectLock(cb);
+
+	if (cb->suLabel != -1) {
+		AG_WidgetUnmapSurface(cb, cb->suLabel);
+		cb->suLabel = -1;
+	}
+	Free(cb->label);
+	cb->label = labelDup;
+	
+	AG_Redraw(cb);
+	AG_ObjectUnlock(cb);
 }
 
 AG_WidgetClass agCheckboxClass = {

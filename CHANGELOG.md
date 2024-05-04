@@ -7,6 +7,7 @@ All notable changes to Agar will be documented in this file. The format is based
 - New functions [**AG_InitVideoSDL2**](https://libagar.org/man3/AG_InitVideoSDL2) and [**AG_SetVideoSurfaceSDL2**](https://libagar.org/man3/AG_SetVideoSurfaceSDL2) for integrating with an existing SDL2 display context. Thanks Brigham Keys!
 - [**AG_Tlist**](https://libagar.org/man3/AG_Tlist): New function `AG_TlistCopy()`. Copy all items from a source to a destination `AG_Tlist`.
 - [**AG_Combo**](https://libagar.org/man3/AG_Combo): New member `nVisItems`. Set the number of items to show by default in expansions.
+- [**AG_Checkbox**](https://libagar.org/man3/AG_Checkbox): New functions `AG_CheckboxText()` and `AG_CheckboxTextS()` to update the text label.
 
 ### Fixed
 - [**AG_Combo**](https://libagar.org/man3/AG_Combo): Make it again possible to statically initialize `list` before `combo-expanded`. Restores compatibility pre-1.6. Thanks Wally!
