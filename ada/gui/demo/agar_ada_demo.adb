@@ -1,8 +1,8 @@
-------------------------------------------
--- agar_ada_demo.adb: Agar-GUI Ada demo --
-------------------------------------------
--- Public domain --
--------------------
+                      ------------------------------------------
+                      -- agar_ada_demo.adb: Agar-GUI Ada demo --
+                      ------------------------------------------
+                                 -- Public domain --
+                                 -------------------
 with Agar.Init;
 with Agar.Error;
 with Agar.Data_Source;
@@ -15,18 +15,24 @@ with Agar.Init_GUI;
 with Agar.Surface; use Agar.Surface;
 with Agar.Text;
 with Agar.Widget;
-with Interfaces; use Interfaces;
-with System;
+with Agar.Box; use Agar.Box;
+with Agar.Button; use Agar.Button;
+with Agar.Checkbox; use Agar.Checkbox;
 
+with Interfaces; use Interfaces;
+with Interfaces.C;
+with System;
 with Ada.Characters.Latin_1;
 with Ada.Real_Time; use Ada.Real_Time;
 with Ada.Text_IO;
-with Ada.Numerics.Elementary_Functions;
-use Ada.Numerics.Elementary_Functions;
+with Ada.Numerics.Elementary_Functions; use Ada.Numerics.Elementary_Functions;
 
 procedure agar_ada_demo is
-  package AGText renames Agar.Text;
+  package AGO renames Agar.Object;
+  package AGT renames Agar.Text;
   package AGW renames Agar.Widget;
+
+  package C renames Interfaces.C;
   package T_IO renames Ada.Text_IO;
   package RT renames Ada.Real_Time;
   package LAT1 renames Ada.Characters.Latin_1;
@@ -268,13 +274,13 @@ begin
       Line_Count     : Natural;
     begin
       -- Push rendering attributes onto the stack.
-      AGText.Push_Text_State;
+      AGT.Push_Text_State;
 
       -- Set the text color.
-      AGText.Text_Set_Color_8(16#73fa00ff#);
+      AGT.Text_Set_Color_8(16#73fa00ff#);
 
       -- Render some text.
-      Hello_Label := AGText.Text_Render("Hello, world!");
+      Hello_Label := AGT.Text_Render("Hello, world!");
       T_IO.Put_Line("Rendered `Hello' is:" &
                     C.unsigned'Image(Hello_Label.W) & "x" &
                     C.unsigned'Image(Hello_Label.H) & "x"  &
@@ -287,13 +293,13 @@ begin
       Free_Surface(Hello_Label);
 
       -- Change some attributes and render text again.
-      AGText.Text_Set_BG_Color_8(16#00ee00ff#);
-      AGText.Text_Set_Color_8(16#000000ff#);
-      AGText.Text_Set_Font
+      AGT.Text_Set_BG_Color_8(16#00ee00ff#);
+      AGT.Text_Set_Color_8(16#000000ff#);
+      AGT.Text_Set_Font
         (Family => "monoalgue",
-         Size   => AGText.Font_Points(18),
+         Size   => AGT.Font_Points(18),
          Bold   => True);
-      Hello_Label := AGText.Text_Render("Hello, world!");
+      Hello_Label := AGT.Text_Render("Hello, world!");
       Blit_Surface
         (Source => Hello_Label,
          Target => Surf,
@@ -302,11 +308,11 @@ begin
       Free_Surface(Hello_Label);
 
       -- Set to 150% of the current font size and dark green BG.
-      AGText.Text_Set_Font
+      AGT.Text_Set_Font
         (Percent => 150);
-      AGText.Text_Set_Color_8(255,150,150);
-      AGText.Text_Set_BG_Color_8(16#005500ff#);
-      Hello_Label := AGText.Text_Render
+      AGT.Text_Set_Color_8(255,150,150);
+      AGT.Text_Set_BG_Color_8(16#005500ff#);
+      Hello_Label := AGT.Text_Render
         ("Agar v" &
          Integer'Image(Major) & "." &
          Integer'Image(Minor) & "." &
@@ -319,7 +325,7 @@ begin
       Free_Surface(Hello_Label);
 
       -- Calculate how large a surface needs to be to fit rendered text.
-      AGText.Size_Text
+      AGT.Size_Text
         (Text => "Agar version " &
                  Integer'Image(Major) & "." &
                  Integer'Image(Minor) & "." &
@@ -329,7 +335,7 @@ begin
       T_IO.Put_Line("Font engine says `Hello' should take" &
                     Natural'Image(Text_W) & " x" & Natural'Image(Text_H) & " pixels");
 
-      AGText.Size_Text
+      AGT.Size_Text
         (Text       => "Hello, one" & LAT1.CR & LAT1.LF &
                        "two"        & LAT1.CR & LAT1.LF &
                        "and three",
@@ -347,7 +353,7 @@ begin
       declare
         X,Y : Integer;
       begin
-        AGText.Text_Align
+        AGT.Text_Align
           (W_Area  => 320,
            H_Area  => 240,
            W_Text  => Text_W,
@@ -360,7 +366,7 @@ begin
       end;      
 
       -- Pop rendering attributes off the stack.
-      AGText.Pop_Text_State;
+      AGT.Pop_Text_State;
     end;
 
     --
@@ -499,6 +505,48 @@ begin
 
     -- Set the titlebar text --
     AGW.Set_Window_Caption(My_Window, "Ada Hello!!");
+
+    -- Create some widgets --
+    declare
+      My_V_Box : Box_Access := New_Box
+        (Parent      => AGW.Window_To_Widget(My_Window),
+         Orientation => VERTICAL_BOX,
+         Expand      => True,
+         Shading     => True);
+
+      My_H_Box : Box_Access := New_Box
+        (Parent      => Box_To_Widget(My_V_Box),
+         Orientation => HORIZONTAL_BOX,
+         H_Fill      => True);
+       
+      My_Button_1 : Button_Access := New_Button
+        (Parent    => Box_To_Widget(My_H_Box),
+         Text      => "Ada",
+         Exclusive => True);
+
+      My_Button_2 : Button_Access := New_Button
+        (Parent    => Box_To_Widget(My_H_Box),
+         Text      => "Hello!",
+         Exclusive => True);
+
+      My_Checkbox_1 : Checkbox_Access := New_Checkbox
+        (Parent     => Box_To_Widget(My_V_Box),
+         Text       => "Checkbox #1",
+         Init_State => True,
+         Exclusive  => True);
+
+      My_Checkbox_2 : Checkbox_Access := New_Checkbox
+        (Parent    => Box_To_Widget(My_V_Box),
+         Text      => "Checkbox #2",
+         Exclusive => True);
+
+    begin
+      T_IO.Put_Line ("Box created: " & AGO.Get_Name(Box_To_Object(My_V_Box)));
+      T_IO.Put_Line ("Button #1 created: " & AGO.Get_Name(Button_To_Object(My_Button_1)));
+      T_IO.Put_Line ("Button #2 created: " & AGO.Get_Name(Button_To_Object(My_Button_2)));
+      T_IO.Put_Line ("Checkbox #1 created: " & AGO.Get_Name(Checkbox_To_Object(My_Checkbox_1)));
+      T_IO.Put_Line ("Checkbox #2 created: " & AGO.Get_Name(Checkbox_To_Object(My_Checkbox_2)));
+    end;
 
     -- Adjust window borders (normally used in single-window mode) --
     --AGW.Set_Window_Borders

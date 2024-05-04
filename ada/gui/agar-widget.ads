@@ -1853,7 +1853,7 @@ package Agar.Widget is
     with Convention => C;
 
   --------------------------
-  -- Agar window instance --
+  -- Agar Window instance --
   --------------------------
   type Window is limited record
     Super                : aliased Widget;    -- ( Widget -> Window )

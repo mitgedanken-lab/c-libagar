@@ -16,6 +16,9 @@ LIBS+=		${AGAR_LIBS} ${AGAR_ADA_CORE_LIBS} ${AGAR_CORE_LIBS}
 
 SRCS=		ag_drivers.c \
 		ag_widget.c \
+		agar-box.adb \
+		agar-button.adb \
+		agar-checkbox.adb \
 		agar-init_gui.adb \
 		agar-input_device.ads \
 		agar-surface.adb \
