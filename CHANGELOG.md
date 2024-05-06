@@ -13,6 +13,7 @@ All notable changes to Agar will be documented in this file. The format is based
 - [**AG_Combo**](https://libagar.org/man3/AG_Combo): Make it again possible to statically initialize `list` before `combo-expanded`. Restores compatibility pre-1.6. Thanks Wally!
 - [**AG_FileDlg**](https://libagar.org/man3/AG_FileDlg): Add "Any File" type. Fix widget geometries not updating when switching to a different Type filter.
 - SDL2 drivers: Require at least version 2.0.22 of SDL2 (for `SDL_HINT_MOUSE_AUTO_CAPTURE`).
+- [**AG_ProgressBar**](https://libagar.org/man3/AG_ProgressBar): Make `padding` work as expected in progress bar. Thanks scaramacai!
 
 ## [1.7.0] - 2023-05-02
 ### Added

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2010-2020 Julien Nadeau Carriere <vedge@csoft.net>
+ * Copyright (c) 2010-2024 Julien Nadeau Carriere <vedge@csoft.net>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -175,8 +175,10 @@ SizeRequest(void *_Nonnull obj, AG_SizeReq *_Nonnull r)
 static int
 SizeAllocate(void *_Nonnull obj, const AG_SizeAlloc *_Nonnull a)
 {
-	if (a->w < WIDGET(obj)->paddingLeft + 5 + WIDGET(obj)->paddingRight ||
-	    a->h < WIDGET(obj)->paddingTop + 5 + WIDGET(obj)->paddingBottom) {
+	AG_Widget *w = WIDGET(obj);
+
+	if (a->w < (w->paddingLeft + 5 + w->paddingRight) ||
+	    a->h < (w->paddingTop  + 5 + w->paddingBottom)) {
 		return (-1);
 	}
 	return (0);
@@ -232,10 +234,6 @@ Draw(void *_Nonnull obj)
 {
 	AG_ProgressBar *pb = obj;
 	AG_Rect rd = WIDGET(pb)->r;
-	const int paddingLeft   = WIDGET(pb)->paddingLeft;
-	const int paddingRight  = WIDGET(pb)->paddingRight;
-	const int paddingTop    = WIDGET(pb)->paddingTop;
-	const int paddingBottom = WIDGET(pb)->paddingBottom;
 	int min, max, val;
 
 	min = AG_GetInt(pb, "min");
@@ -249,20 +247,18 @@ Draw(void *_Nonnull obj)
 	if ((max - min) <= 0)
 		return;
 
-	rd.x = paddingLeft;
-	rd.y = paddingTop;
+	rd.x = 0;
+	rd.y = 0;
 
 	switch (pb->type) {
 	case AG_PROGRESS_BAR_VERT:
-		rd.h -= (paddingTop + paddingBottom);
 		rd.y += rd.h - (val-min)*(rd.h)/(max-min) - 1;
-		rd.h = HEIGHT(pb) - paddingTop - rd.y + 1;
-		rd.w -= (paddingLeft + paddingRight);
+		rd.h = HEIGHT(pb) - rd.y;
+		rd.w -= 1;
 		break;
 	case AG_PROGRESS_BAR_HORIZ:
 	default:
-		rd.w = (val-min)*(rd.w - paddingLeft - paddingRight)/(max-min);
-		rd.h -= (paddingTop + paddingBottom);
+		rd.w = (val-min)*(rd.w - 1)/(max-min);
 		break;
 	}
 	AG_DrawRect(pb, &rd, &WCOLOR(pb,SELECTION_COLOR));
